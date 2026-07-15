@@ -1,0 +1,179 @@
+/* ============================================================
+   Claude-like · user overlay  v38-fix
+   Loaded after claude-like.css (Typora cascade: theme → base.user → theme.user)
+   Goals from industry MD engines + Typora docs:
+   - present layer only (parse is fixed by Typora)
+   - native class hooks (class/id stripped from user HTML in live)
+   - degrade-gracefully for L3/L4 N/A fences
+   ============================================================ */
+
+/* ---------- A. Definition list HTML (only reliable path) ---------- */
+#write dl {
+    margin: 1.1em 0 1.25em;
+    padding: 0.75rem 1rem 0.85rem;
+    background: var(--elevated-bg, #fffcf7);
+    border: 1px solid var(--border-soft, rgba(31, 30, 29, 0.08));
+    border-radius: var(--radius-md, 10px);
+    border-left: 3px solid var(--accent-color, #d97757);
+}
+#write dt {
+    font-weight: 700;
+    font-family: var(--font-ui);
+    color: var(--accent-deep, #b55320);
+    margin-top: 0.55rem;
+    font-size: 0.95rem;
+}
+#write dt:first-child { margin-top: 0; }
+#write dd {
+    margin: 0.2rem 0 0.45rem 0.15rem;
+    padding: 0.15rem 0 0.15rem 0.85rem;
+    border-left: 2px solid var(--border-color, rgba(31, 30, 29, 0.14));
+    color: var(--quote-text-color, #3d3d3a);
+    line-height: 1.65;
+}
+#write dd + dt {
+    margin-top: 0.85rem;
+    padding-top: 0.55rem;
+    border-top: 1px dashed var(--border-soft);
+}
+
+/* ---------- B. align=center showcase (class stripped; this works live) ---------- */
+#write div[align="center"] {
+    text-align: center !important;
+    margin: 1.15rem auto 1.35rem;
+    padding: 1rem 1.15rem 1.15rem;
+    max-width: 100%;
+    background:
+        linear-gradient(180deg, var(--accent-softer, rgba(217, 119, 87, 0.07)), transparent 60%),
+        var(--elevated-bg, #fffcf7);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-lg, 14px);
+    box-shadow: var(--shadow-card, 0 1px 2px rgba(31, 30, 29, 0.06));
+}
+#write div[align="center"] img,
+#write div[align="center"] .md-image {
+    display: inline-block !important;
+    margin: 0.18rem 0.25rem !important;
+    vertical-align: middle;
+    border: 0 !important;
+    box-shadow: none !important;
+    max-height: 1.85rem;
+}
+
+/* ---------- C. Card-like 1-row HTML tables (no class needed) ---------- */
+#write table:not(.md-table) {
+    border-collapse: separate;
+    border-spacing: 0.55rem;
+    width: 100%;
+    margin: 1rem 0;
+    background: transparent;
+    border: 0;
+}
+#write table:not(.md-table) td {
+    background: var(--elevated-bg, #fffcf7);
+    border: 1px solid var(--border-soft) !important;
+    border-top: 2.5px solid var(--accent-color, #d97757) !important;
+    border-radius: var(--radius-md, 10px);
+    padding: 0.75rem 0.9rem !important;
+    vertical-align: top;
+    font-family: var(--font-ui);
+    font-size: 0.9rem;
+    box-shadow: var(--shadow-card, none);
+}
+#write table:not(.md-table) th {
+    background: var(--meta-bg, #f0eee6);
+    border: 1px solid var(--border-soft) !important;
+    border-radius: var(--radius-sm, 6px);
+    font-family: var(--font-ui);
+}
+
+/* GFM markdown tables keep grid look (md-table class from Typora) */
+#write table.md-table {
+    border-spacing: 0;
+    border-collapse: collapse;
+}
+#write table.md-table td,
+#write table.md-table th {
+    border-radius: 0;
+    box-shadow: none;
+    border-top-width: 1px !important;
+}
+
+/* ---------- D. Unsupported / external fence languages: clear chrome ---------- */
+#write .md-fences[lang="geojson"],
+#write .md-fences[lang="topojson"],
+#write .md-fences[lang="stl"],
+#write .md-fences[lang="plantuml"],
+#write .md-fences[lang="kroki"],
+#write .md-fences[lang="d2"],
+#write .md-fences[lang="wavedrom"],
+#write .md-fences[lang="graphviz"],
+#write .md-fences[lang="dot"] {
+    border-left: 3px solid var(--muted-text-color, #8a8880);
+    opacity: 0.92;
+}
+/* Tooltip strip via ::before on panel when not advanced-rendered */
+#write .md-fences[lang="geojson"]:not(.md-fences-advanced)::before,
+#write .md-fences[lang="topojson"]:not(.md-fences-advanced)::before,
+#write .md-fences[lang="stl"]:not(.md-fences-advanced)::before,
+#write .md-fences[lang="plantuml"]:not(.md-fences-advanced)::before {
+    content: "外站围栏 · Typora 无此引擎 · 仅代码高亮";
+    display: block;
+    font-family: var(--font-ui);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--muted-text-color, #8a8880);
+    margin-bottom: 0.35rem;
+    text-transform: uppercase;
+}
+
+/* ---------- E. picture / media ---------- */
+#write picture {
+    display: block;
+    text-align: center;
+    margin: 0.85rem 0;
+}
+#write picture img {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--radius-md, 10px);
+}
+
+/* ---------- F. Deep quote mermaid readability (reinforce base §92.6) ---------- */
+#write blockquote .md-fences[lang="mermaid"] .md-diagram-panel {
+    margin: 0.45rem 0;
+}
+#write blockquote blockquote blockquote .md-fences[lang="mermaid"] .md-diagram-panel-preview {
+    zoom: 1.08;
+}
+
+/* ---------- G. Print / export: keep structure ---------- */
+@media print {
+    #write div[align="center"] {
+        box-shadow: none !important;
+        border: 1px solid #ccc !important;
+        break-inside: avoid;
+    }
+    #write table:not(.md-table) td {
+        box-shadow: none !important;
+        break-inside: avoid;
+    }
+    #write dl {
+        box-shadow: none !important;
+        break-inside: avoid;
+    }
+    #write .md-fences[lang="mermaid"],
+    #write .md-diagram-panel {
+        break-inside: avoid;
+    }
+}
+
+/* ---------- H. Focus mode: keep diagrams visible enough ---------- */
+.on-focus-mode #write .md-fences.md-fences-advanced {
+    opacity: 0.92;
+}
+.on-focus-mode #write .md-fences.md-fences-advanced.md-focus,
+.on-focus-mode #write .md-fences.md-fences-advanced:hover {
+    opacity: 1;
+}

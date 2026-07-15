@@ -1,0 +1,175 @@
+/* ============================================================
+   Claude-like · Dark  v6  CLAUDE QUIET + TABLES
+   Pure Claude chat aesthetic · quiet syntax · mixed CJK/tech
+   Tokens only — rules live in claude-like-base.css
+   Brand: #d97757 · #faf9f5 · #141413
+   ============================================================ */
+
+/* @import must precede other rules (CSS cascade) */
+@import "claude-like-base.css";
+
+:root {
+    --bg-color: #1a1917;
+    --window-bg-color: #1f1e1c;
+    --side-bar-bg-color: #1c1b19;
+    --elevated-bg: #242220;
+    --panel-bg: #211f1c;
+    --meta-bg: #262422;
+    --hover-color: #2a2825;
+    --glass-highlight: rgba(255, 255, 255, 0.04);
+
+    --text-color: #e8e6e3;
+    --heading-color: #f5f3ef;
+    --control-text-color: #a8a59c;
+    --muted-text-color: #8a8780;
+    --faint-text-color: #6a6760;
+
+    --accent-color: #d97757;
+    --accent-hover: #ef9a78;
+    --accent-deep: #efb892;
+    --accent-soft: rgba(217, 119, 87, 0.14);
+    --accent-softer: rgba(217, 119, 87, 0.08);
+    --accent-strong: rgba(217, 119, 87, 0.2);
+    --accent-blue: #7aabd4;
+    --accent-green: #8fa574;
+    --accent-purple: #a88cba;
+    --accent-teal: #6ec9c0;
+    --accent-gold: #d4a05a;
+    --accent-rose: #e09090;
+    --strong-color: #efb892;
+    --em-color: #c8c4bb;
+    --select-text-bg-color: rgba(217, 119, 87, 0.28);
+    --item-hover-bg-color: var(--hover-color);
+    --border-color: rgba(232, 230, 227, 0.12);
+    --border-soft: rgba(232, 230, 227, 0.07);
+    --border-strong: rgba(232, 230, 227, 0.18);
+    --shadow-color: rgba(0, 0, 0, 0.28);
+    --shadow-strong: rgba(0, 0, 0, 0.45);
+    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.25), 0 4px 14px -6px rgba(0, 0, 0, 0.35);
+
+    --quote-bg-color: transparent;
+    --quote-border-color: rgba(232, 230, 227, 0.16);
+    --quote-text-color: #c8c4bb;
+
+    --table-border-strong-color: rgba(232, 230, 227, 0.28);
+    --table-row-border-color: rgba(232, 230, 227, 0.1);
+    --table-hover-color: var(--accent-softer);
+    --table-alt-color: #211f1c;
+    --table-header-bg: #2a2724;
+    --table-grid-color: rgba(232, 230, 227, 0.08);
+    --table-sticky-shadow: 0 2px 8px -3px rgba(0, 0, 0, 0.35);
+    --table-scroll-fade: transparent;
+    --diagram-bg: #1a1815;
+    --diagram-border: rgba(232, 230, 227, 0.14);
+    --diagram-shadow: 0 1px 2px rgba(0, 0, 0, 0.2), 0 10px 28px -14px rgba(0, 0, 0, 0.45);
+    --diagram-canvas-bg: #211f1b;
+    --diagram-canvas-border: rgba(232, 230, 227, 0.12);
+    --diagram-grid: rgba(232, 230, 227, 0.055);
+    --diagram-source-bg: rgba(255, 255, 255, 0.035);
+    --diagram-badge-bg: rgba(217, 119, 87, 0.18);
+    --diagram-badge-border: rgba(232, 148, 110, 0.4);
+    --diagram-label-color: #f5f0e8;
+    --diagram-label-size: 18px;
+    --diagram-cluster-label-size: 17px;
+    --diagram-seq-label-size: 17px;
+    --diagram-label-weight: 500;
+    --diagram-font-family: "Anthropic Sans Web Text", "Microsoft YaHei UI", "PingFang SC", "Segoe UI", sans-serif;
+    /* mermaid 几何 = 库存；zoom/min-h 类 token 已废弃 */
+    --math-inline-scale: 1.06em;
+    --math-display-scale: 1.2em;
+    --math-block-bg: #1c1b18;
+    --math-block-border: rgba(232, 230, 227, 0.1);
+    --math-block-shadow: none;
+    --math-block-pad: 0.95rem 1.2rem;
+    --table-zebra: rgba(232, 230, 227, 0.055);
+
+    --code-bg-color: rgba(28, 26, 24, 0.85);
+    --code-text-color: #e8e0d6;
+    --code-border-color: rgba(232, 230, 227, 0.1);
+    --code-muted-color: #8b8378;
+    --code-keyword-color: #c4a1ff;
+    --code-string-color: #8fd49a;
+    --code-number-color: #6ec9c0;
+    --code-symbol-color: #f07178;
+    --code-type-color: #7eb8ff;
+    --code-def-color: #7eb8ff;
+    --code-var2-color: #e6a56c;
+    --inline-code-color: #e8a090;
+    --inline-code-bg-color: rgba(255, 255, 255, 0.05);
+    --inline-code-border-color: rgba(232, 230, 227, 0.1);
+    --rawblock-edit-panel-bd: var(--meta-bg);
+    --pre-lang-color: #9a9388;
+
+    --dot-red: #ff5f57;
+    --dot-yellow: #febc2e;
+    --dot-green: #28c840;
+    --kbd-color: #d0cbc2;
+    --kbd-bg: #2d2a27;
+    --kbd-border: #4a4540;
+    --kbd-shadow: #141210;
+    --tag-color: #b0a090;
+    --lang-color: #9a9388;
+    --scrollbar-color: rgba(180, 170, 155, 0.22);
+    --scrollbar-hover: rgba(180, 170, 155, 0.42);
+    --sidebar-gradient-from: rgba(28, 27, 25, 0.2);
+    --sidebar-gradient-to: rgba(28, 27, 25, 0.55);
+    --link-underline: rgba(232, 230, 227, 0.28);
+    --mark-wash: rgba(217, 119, 87, 0.32);
+    --ins-color: #8fd49a;
+    --del-color: #a8a59c;
+    --cite-color: #a8a59c;
+    --samp-bg: rgba(255, 255, 255, 0.04);
+    --media-bg: #242220;
+    --details-bg: rgba(255, 255, 255, 0.04);
+
+    /* Alerts (dark) */
+    --alert-bg-default: rgba(255, 255, 255, 0.04);
+    --alert-bg-soft-default: rgba(255, 255, 255, 0.02);
+    --alert-note-bg: rgba(122, 171, 212, 0.12);
+    --alert-note-bg-soft: rgba(122, 171, 212, 0.05);
+    --alert-note-wash: rgba(122, 171, 212, 0.14);
+    --alert-note-border: rgba(122, 171, 212, 0.22);
+    --alert-tip-bg: rgba(143, 165, 116, 0.12);
+    --alert-tip-bg-soft: rgba(143, 165, 116, 0.05);
+    --alert-tip-wash: rgba(143, 165, 116, 0.14);
+    --alert-tip-border: rgba(143, 165, 116, 0.22);
+    --alert-important-bg: rgba(168, 140, 186, 0.12);
+    --alert-important-bg-soft: rgba(168, 140, 186, 0.05);
+    --alert-important-wash: rgba(168, 140, 186, 0.14);
+    --alert-important-border: rgba(168, 140, 186, 0.22);
+    --alert-warning-bg: rgba(212, 160, 90, 0.12);
+    --alert-warning-bg-soft: rgba(212, 160, 90, 0.05);
+    --alert-warning-wash: rgba(212, 160, 90, 0.14);
+    --alert-warning-border: rgba(212, 160, 90, 0.24);
+    --alert-caution-bg: rgba(224, 144, 144, 0.12);
+    --alert-caution-bg-soft: rgba(224, 144, 144, 0.05);
+    --alert-caution-wash: rgba(224, 144, 144, 0.14);
+    --alert-caution-border: rgba(224, 144, 144, 0.22);
+
+    --font-body: "Anthropic Serif Web Text", "Noto Serif SC", "Source Han Serif SC", "Songti SC", Georgia, "Microsoft YaHei UI", serif;
+    --font-ui: "Anthropic Sans Web Text", "Microsoft YaHei UI", "PingFang SC", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "Cascadia Code", "Cascadia Mono", Consolas, "JetBrainsMono NF", "Anthropic Mono Variable", ui-monospace, monospace;
+
+    --content-pad-x: 2rem;
+    --content-pad-y: 2.5rem;
+    --body-line-height: 1.72;
+    --paragraph-gap: 0.75em;
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --radius-xl: 18px;
+    --radius-pill: 999px;
+    --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+    --transition-fast: 120ms ease;
+
+    /* Mermaid：仅官方变量（与 night 主题同思路） */
+    --mermaid-theme: night;
+    --mermaid-font-family: "Anthropic Sans Web Text", "Microsoft YaHei UI", "PingFang SC", "Segoe UI", sans-serif;
+    --mermaid-sequence-numbers: on;
+    --mermaid-flowchart-curve: basis;
+    --mermaid--gantt-left-padding: 75;
+    --sequence-theme: simple;
+    --diagram-flow-zoom: 1.35;
+    --diagram-sequence-zoom: 1.08;
+    --content-max: 48rem;
+}

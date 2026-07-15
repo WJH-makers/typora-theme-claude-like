@@ -1,0 +1,192 @@
+/* ============================================================
+   Claude-like · Light  v10  CLEAN + DIAGRAM SUPPORT
+   Tokens only — rules live in claude-like-base.css
+   Brand: #d97757 · #faf9f5 · #141413
+   ============================================================ */
+
+/* @import must precede other rules (CSS cascade) */
+@import "claude-like-base.css";
+
+:root {
+    --bg-color: #faf9f5;
+    --window-bg-color: #f5f4ed;
+    --side-bar-bg-color: #f5f4ed;
+    --elevated-bg: #fffcf7;
+    --panel-bg: #f8f6ef;
+    --meta-bg: #f0eee6;
+    --hover-color: #f0eee6;
+    --glass-highlight: rgba(255, 255, 255, 0.72);
+
+    --text-color: #141413;
+    --heading-color: #141413;
+    --control-text-color: #5c5a55;
+    --muted-text-color: #8a8880;
+    --faint-text-color: #b0aea5;
+
+    --accent-color: #d97757;
+    --accent-hover: #c15f3c;
+    --accent-deep: #b55320;
+    --accent-soft: rgba(217, 119, 87, 0.1);
+    --accent-softer: rgba(217, 119, 87, 0.055);
+    --accent-strong: rgba(217, 119, 87, 0.16);
+    --accent-blue: #6a9bcc;
+    --accent-green: #788c5d;
+    --accent-purple: #8b6f9d;
+    --accent-teal: #0d7a78;
+    --accent-gold: #ad7837;
+    --accent-rose: #b45f51;
+    --strong-color: #b55320;
+    --em-color: #3d3d3a;
+    --select-text-bg-color: rgba(217, 119, 87, 0.22);
+    --item-hover-bg-color: var(--hover-color);
+    --border-color: rgba(31, 30, 29, 0.14);
+    --border-soft: rgba(31, 30, 29, 0.08);
+    --border-strong: rgba(31, 30, 29, 0.22);
+    --shadow-color: rgba(31, 30, 29, 0.08);
+    --shadow-strong: rgba(31, 30, 29, 0.16);
+    --shadow-card: 0 1px 2px rgba(31, 30, 29, 0.06), 0 4px 14px -6px rgba(31, 30, 29, 0.1);
+
+    --quote-bg-color: transparent;
+    --quote-border-color: rgba(31, 30, 29, 0.14);
+    --quote-text-color: #3d3d3a;
+
+    --table-border-strong-color: rgba(31, 30, 29, 0.42);
+    --table-row-border-color: rgba(31, 30, 29, 0.12);
+    --table-hover-color: var(--accent-softer);
+    --table-zebra: rgba(61, 61, 58, 0.03);
+    --table-alt-color: #f8f6ef;
+    --table-header-bg: #f0eee6;
+    --table-grid-color: rgba(31, 30, 29, 0.07);
+    --table-sticky-shadow: 0 2px 8px -3px rgba(31, 30, 29, 0.12);
+    --table-scroll-fade: transparent;
+    --diagram-bg: #f7f3eb;
+    --diagram-border: rgba(31, 30, 29, 0.14);
+    --diagram-shadow: 0 1px 2px rgba(31, 30, 29, 0.05), 0 10px 28px -12px rgba(31, 30, 29, 0.14);
+    --diagram-canvas-bg: #fffaf3;
+    --diagram-canvas-border: rgba(31, 30, 29, 0.1);
+    --diagram-grid: rgba(31, 30, 29, 0.05);
+    --diagram-source-bg: rgba(31, 30, 29, 0.04);
+    --diagram-badge-bg: rgba(217, 119, 87, 0.14);
+    --diagram-badge-border: rgba(196, 92, 62, 0.34);
+    --diagram-label-color: #1c1917;
+    --diagram-label-size: 18px;
+    --diagram-cluster-label-size: 17px;
+    --diagram-seq-label-size: 17px;
+    --diagram-label-weight: 500;
+    --diagram-font-family: "Anthropic Sans Web Text", "Microsoft YaHei UI", "PingFang SC", "Segoe UI", sans-serif;
+    /* Math */
+    --math-inline-scale: 1.06em;
+    --math-display-scale: 1.2em;
+    --math-block-bg: #fffcf7;
+    --math-block-border: rgba(31, 30, 29, 0.1);
+    --math-block-shadow: 0 1px 2px rgba(31, 30, 29, 0.04);
+    --math-block-pad: 0.95rem 1.2rem;
+
+    --code-bg-color: rgba(255, 255, 255, 0.62);
+    --code-text-color: #1c1b19;
+    --code-border-color: rgba(31, 30, 29, 0.12);
+    --code-muted-color: #6e7687;
+    --code-keyword-color: #7a2fd0;
+    --code-string-color: #2a7a32;
+    --code-number-color: #0d7a78;
+    --code-symbol-color: #b80a18;
+    --code-type-color: #0051c2;
+    --code-def-color: #0051c2;
+    --code-var2-color: #b34a00;
+    --inline-code-color: #8a2424;
+    --inline-code-bg-color: rgba(61, 61, 58, 0.06);
+    --inline-code-border-color: rgba(31, 30, 29, 0.1);
+    --rawblock-edit-panel-bd: var(--meta-bg);
+    --pre-lang-color: #73726c;
+
+    --dot-red: #ff5f57;
+    --dot-yellow: #febc2e;
+    --dot-green: #28c840;
+    --kbd-color: #3d3d3a;
+    --kbd-bg: #f0eee6;
+    --kbd-border: #d4d2ca;
+    --kbd-shadow: #c4c2ba;
+    --tag-color: #9a8670;
+    --lang-color: #73726c;
+    --scrollbar-color: rgba(31, 30, 29, 0.22);
+    --scrollbar-hover: rgba(31, 30, 29, 0.4);
+    --sidebar-gradient-from: rgba(245, 244, 237, 0.05);
+    --sidebar-gradient-to: rgba(245, 244, 237, 0.45);
+    --link-underline: rgba(20, 20, 19, 0.28);
+    --mark-wash: rgba(217, 119, 87, 0.28);
+    --ins-color: #2a7a32;
+    --del-color: #5c5a55;
+    --cite-color: #5c5a55;
+    --samp-bg: rgba(61, 61, 58, 0.05);
+    --media-bg: #f0eee6;
+    --details-bg: rgba(255, 255, 255, 0.45);
+
+    /* Alerts (light) */
+    --alert-bg-default: rgba(255, 255, 255, 0.5);
+    --alert-bg-soft-default: rgba(255, 255, 255, 0.2);
+    --alert-note-bg: rgba(106, 155, 204, 0.1);
+    --alert-note-bg-soft: rgba(106, 155, 204, 0.04);
+    --alert-note-wash: rgba(106, 155, 204, 0.12);
+    --alert-note-border: rgba(106, 155, 204, 0.22);
+    --alert-tip-bg: rgba(120, 140, 93, 0.11);
+    --alert-tip-bg-soft: rgba(120, 140, 93, 0.04);
+    --alert-tip-wash: rgba(120, 140, 93, 0.12);
+    --alert-tip-border: rgba(120, 140, 93, 0.22);
+    --alert-important-bg: rgba(139, 111, 157, 0.11);
+    --alert-important-bg-soft: rgba(139, 111, 157, 0.04);
+    --alert-important-wash: rgba(139, 111, 157, 0.12);
+    --alert-important-border: rgba(139, 111, 157, 0.22);
+    --alert-warning-bg: rgba(173, 120, 55, 0.12);
+    --alert-warning-bg-soft: rgba(173, 120, 55, 0.04);
+    --alert-warning-wash: rgba(173, 120, 55, 0.13);
+    --alert-warning-border: rgba(173, 120, 55, 0.24);
+    --alert-caution-bg: rgba(180, 95, 81, 0.11);
+    --alert-caution-bg-soft: rgba(180, 95, 81, 0.04);
+    --alert-caution-wash: rgba(180, 95, 81, 0.12);
+    --alert-caution-border: rgba(180, 95, 81, 0.22);
+
+    /*
+     * Dual-script cascade (CDP-fixed):
+     * Anthropic first + Latin unicode-range; Noto second + CJK unicode-range.
+     * Never put unrestricted Noto first — it steals Latin and Anthropic never paints.
+     */
+    --font-body: "Anthropic Serif Web Text", "Noto Serif SC", "Source Han Serif SC", "Songti SC", Georgia, "Microsoft YaHei UI", serif;
+    --font-ui: "Anthropic Sans Web Text", "Microsoft YaHei UI", "PingFang SC", "Segoe UI", system-ui, sans-serif;
+    /* Cascadia first for φ/math code; Anthropic Mono is Latin subset only */
+    --font-mono: "Cascadia Code", "Cascadia Mono", Consolas, "JetBrainsMono NF", "Anthropic Mono Variable", ui-monospace, monospace;
+
+    /* v20：阅读栏（GitHub 响应式加宽 + 中文行高） */
+    --content-max: 48rem;
+    --content-max-lg: 52rem;
+    --content-max-xl: 56rem;
+    --content-pad-x: 2rem;
+    --content-pad-y: 2.5rem;
+    --body-line-height: 1.75;
+    --paragraph-gap: 0.72em;
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --radius-xl: 18px;
+    --radius-pill: 999px;
+    --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+    --transition-fast: 120ms ease;
+
+    /*
+     * Mermaid：仅官方 CSS 变量（support.typora.io/Draw-Diagrams-With-Markdown）
+     * 尺寸/useMaxWidth → 图内 frontmatter config / %%{init}%%，主题不改 SVG 几何
+     */
+    --mermaid-theme: base;
+    --mermaid-font-family: "Anthropic Sans Web Text", "Microsoft YaHei UI", "PingFang SC", "Segoe UI", sans-serif;
+    --mermaid-sequence-numbers: on;
+    --mermaid-flowchart-curve: basis;
+    --mermaid--gantt-left-padding: 75;
+    --diagram-flow-zoom: 1.75;
+    --diagram-sequence-zoom: 1.12;
+    --sequence-theme: simple;
+
+    /* §92 Showcase / diff */
+    --diff-add-fg: #166534;
+    --diff-add-bg: rgba(120, 140, 93, 0.18);
+    --diff-del-fg: #9f1239;
+    --diff-del-bg: rgba(180, 95, 81, 0.15);
+}

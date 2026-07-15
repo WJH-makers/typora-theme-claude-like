@@ -1,0 +1,4264 @@
+/* ============================================================
+   Claude-like · Base  v37  CLEAN + DIAGRAMS + DUAL-SCRIPT FONTS
+   - Anthropic: Latin-only unicode-range (listed first in stack)
+   - Noto Serif SC: CJK-only unicode-range (must NOT steal Latin)
+   - No universal box-sizing (CM / mermaid)
+   - Tables: width auto
+   - CRITICAL: never *,*::before,*::after under prefers-reduced-motion (breaks Mermaid viewBox)
+   - Details: native marker; HTML-block safe
+   ============================================================ */
+
+/* Fallback tokens if skin fails to load (import order safety) */
+:root {
+    --font-body: "Anthropic Serif Web Text", "Noto Serif SC", "Source Han Serif SC", "Songti SC", Georgia, "Microsoft YaHei UI", serif;
+    --font-ui: "Anthropic Sans Web Text", "Microsoft YaHei UI", "PingFang SC", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "Cascadia Code", "Cascadia Mono", Consolas, "Courier New", monospace;
+    --bg-color: #faf9f5;
+    --text-color: #141413;
+    --code-text-color: #1c1b19;
+    --code-bg-color: rgba(255, 255, 255, 0.7);
+    --code-border-color: rgba(31, 30, 29, 0.12);
+    --accent-color: #d97757;
+    --del-color: #5c5a55;
+}
+
+/* ========== 0. Fonts ==========
+ * Dual-script: Anthropic covers Latin (small subset files);
+ * Noto covers CJK only — without CJK unicode-range Noto steals Latin
+ * and Anthropic never paints (CDP 2026-07-15 fonts.check false).
+ */
+@font-face {
+    font-family: "Anthropic Serif Web Text";
+    src: url("./claude_fonts/AnthropicSerifWebText.ttf") format("truetype");
+    font-weight: 400; font-style: normal; font-display: swap;
+    unicode-range: U+0000-00FF, U+0100-024F, U+2000-206F, U+2070-209F, U+20A0-20CF;
+}
+@font-face {
+    font-family: "Anthropic Sans Web Text";
+    src: url("./claude_fonts/AnthropicSansWebText.ttf") format("truetype");
+    font-weight: 400; font-style: normal; font-display: swap;
+    unicode-range: U+0000-00FF, U+0100-024F, U+2000-206F, U+2070-209F, U+20A0-20CF;
+}
+@font-face {
+    font-family: "Anthropic Mono Variable";
+    src: url("./claude_fonts/AnthropicMonoVariable.ttf") format("truetype");
+    font-weight: 100 900; font-style: normal; font-display: swap;
+    unicode-range: U+0000-00FF, U+0100-024F, U+2000-206F;
+}
+@font-face {
+    font-family: "Noto Serif SC";
+    src: url("./claude_fonts/NotoSerifSC-VariableFont_wght.ttf") format("truetype");
+    font-weight: 200 900; font-style: normal; font-display: swap;
+    /* CJK + fullwidth forms only — leave Latin to Anthropic */
+    unicode-range: U+2E80-2EFF, U+2F00-2FDF, U+3000-303F, U+3040-309F, U+30A0-30FF,
+        U+3100-312F, U+31A0-31BF, U+31F0-31FF, U+3200-32FF, U+3300-33FF,
+        U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF, U+FE10-FE1F, U+FE30-FE4F, U+FF00-FFEF;
+}
+
+@include-when-export url(https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap);
+
+/* ========== 2. Base / canvas ========== */
+/* Do NOT set * { box-sizing } — Typora CodeMirror + mermaid need content-box defaults */
+
+html {
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    background-color: var(--bg-color);
+    /* scroll-behavior: smooth; perf */
+}
+
+body {
+    font-family: var(--font-body);
+    color: var(--text-color);
+    background-color: var(--bg-color);
+    line-height: var(--body-line-height, 1.72);
+    letter-spacing: 0.003em;
+    font-weight: 400;
+    font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+::selection {
+    background-color: var(--select-text-bg-color);
+    color: var(--heading-color);
+}
+
+content,
+#typora-source {
+    background: var(--bg-color) !important;
+}
+
+::-webkit-scrollbar { width: 7px; height: 7px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-color);
+    border-radius: var(--radius-pill);
+    border: 2px solid transparent;
+    background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-hover);
+    border: 2px solid transparent;
+    background-clip: padding-box;
+}
+
+#write {
+    max-width: var(--content-max, 48rem);
+    margin: 0 auto;
+    padding: var(--content-pad-y) var(--content-pad-x) 6.5rem;
+    caret-color: var(--accent-color);
+    /* GitHub/vue 系：栏宽随屏幕略增，而非大屏反而变窄 */
+    text-rendering: optimizeLegibility;
+}
+/* 阅读栏：默认 ~48rem；大屏略放宽（对标 github.css 860→1024→1200 思路） */
+@media (min-width: 1400px) {
+    #write { max-width: var(--content-max-lg, 52rem); }
+}
+@media (min-width: 1800px) {
+    #write { max-width: var(--content-max-xl, 56rem); }
+}
+@media (max-width: 768px) {
+    :root { --content-pad-x: 1.15rem; --content-pad-y: 1.35rem; }
+    #write { max-width: 100%; padding-bottom: 4rem; }
+}
+
+#write > ul:first-child,
+#write > ol:first-child { margin-top: 1.5rem; }
+
+/* soft line breaks / hard breaks */
+#write br { line-height: inherit; }
+#write .md-line { min-height: 1.5em; }
+
+/* ========== 3. Headings  # ## ### #### ##### ######  ========== */
+/* Setext (=== / ---) → same h1/h2 elements; no separate CSS path.
+ * Claude Quiet: hierarchy via size/weight/spacing — no rainbow rails */
+h1, h2, h3, h4, h5, h6,
+#write h1, #write h2, #write h3, #write h4, #write h5, #write h6 {
+    position: relative;
+    margin-top: 1.85rem;
+    margin-bottom: 0.55rem;
+    font-family: var(--font-body);
+    font-weight: 600;
+    line-height: 1.28;
+    color: var(--heading-color);
+    letter-spacing: -0.018em;
+    cursor: text;
+    text-wrap: balance;
+    background: none;
+    border-left: 0;
+    box-shadow: none;
+    padding: 0;
+    border-radius: 0;
+}
+
+h1:hover a.anchor, h2:hover a.anchor, h3:hover a.anchor,
+h4:hover a.anchor, h5:hover a.anchor, h6:hover a.anchor { text-decoration: none; }
+
+h1 tt, h1 code, h2 tt, h2 code, h3 tt, h3 code,
+h4 tt, h4 code, h5 tt, h5 code, h6 tt, h6 code { font-size: inherit; }
+
+h1, #write h1 {
+    font-size: 1.85rem;
+    line-height: 1.18;
+    font-weight: 600;
+    margin-top: 0.35rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.55rem;
+    border-bottom: 1px solid var(--border-soft);
+    letter-spacing: -0.022em;
+}
+h2, #write h2 {
+    font-size: 1.38rem;
+    line-height: 1.25;
+    font-weight: 600;
+    margin-top: 2rem;
+    margin-bottom: 0.6rem;
+    padding-bottom: 0.28rem;
+    border-bottom: 1px solid var(--border-soft);
+}
+h3, #write h3 {
+    font-size: 1.16rem;
+    line-height: 1.35;
+    font-weight: 600;
+    margin-top: 1.65rem;
+}
+h4, #write h4 {
+    font-size: 1.04rem;
+    font-weight: 600;
+    margin-top: 1.4rem;
+}
+h5, #write h5 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--control-text-color);
+    margin-top: 1.25rem;
+}
+h6, #write h6 {
+    font-size: 0.82rem;
+    font-weight: 600;
+    /* CDP 对比度：muted #8a8880 仅 ~3.4 → 用 control 灰保证 ≥4.5 */
+    color: var(--control-text-color, #5c5a55);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-family: var(--font-ui);
+    margin-top: 1.15rem;
+}
+
+/* Quiet: no syntax hover labels on headings */
+#write h1:hover::after, #write h2:hover::after, #write h3:hover::after,
+#write h4:hover::after, #write h5:hover::after, #write h6:hover::after {
+    content: none !important;
+    display: none !important;
+}
+
+#write > h3.md-focus:before,
+#write > h4.md-focus:before,
+#write > h5.md-focus:before,
+#write > h6.md-focus:before { left: -1.5625rem; }
+#write > h3.md-focus:before { top: 0.375rem; }
+#write > h4.md-focus:before,
+#write > h5.md-focus:before,
+#write > h6.md-focus:before { top: 0.285714286rem; }
+
+/* ========== 4. Paragraph ========== */
+p, #write p {
+    margin: var(--paragraph-gap, 0.75em) 0;
+    line-height: var(--body-line-height, 1.72);
+}
+#write > p:first-child { margin-top: 0; }
+
+/* ========== 5. Links  [text](url)  <url>  [ref]  ========== */
+/* CDP: 纯正文色链接辨识度不足 → 默认用陶土深色，悬停更亮 */
+a, #write a {
+    color: var(--accent-deep, #b55320);
+    text-decoration: underline;
+    text-decoration-color: var(--link-underline, rgba(181, 83, 32, 0.35));
+    text-underline-offset: 0.18em;
+    text-decoration-thickness: 1px;
+    transition: color var(--transition-fast), text-decoration-color var(--transition-fast);
+}
+a:hover, #write a:hover {
+    color: var(--accent-color);
+    text-decoration-color: var(--accent-color);
+}
+/* autolink / bare URL */
+#write a.md-url,
+#write span.md-plain a {
+    word-break: break-all;
+}
+
+/* internal / anchor */
+#write a[href^="#"] {
+    text-decoration-style: dotted;
+    color: var(--control-text-color);
+}
+#write a[href^="#"]:hover { color: var(--accent-color); }
+/* image link */
+#write a.md-image-link img { border-color: var(--accent-color); }
+
+/* ========== 6. Emphasis  *em*  _em_  **strong**  __strong__  ***both***  ========== */
+em, i, #write em, #write i {
+    font-style: italic;
+    color: var(--em-color);
+}
+strong, b, #write strong, #write b {
+    font-family: var(--font-body);
+    font-weight: 600;
+    color: var(--strong-color);
+    font-synthesis: weight;
+}
+strong em, em strong, b i, i b,
+#write strong em, #write em strong {
+    font-weight: 700;
+    font-style: italic;
+    color: var(--accent-deep);
+}
+
+/* ========== 7. Strikethrough  ~~del~~  <s>  <strike>  ========== */
+del, s, strike, #write del, #write s, #write strike {
+    text-decoration: line-through;
+    color: var(--del-color, #5c5a55);
+    /* CDP: opacity 0.62 + muted gray failed WCAG AA (~3.28). Keep strike readable. */
+    opacity: 0.88;
+    text-decoration-thickness: 1.5px;
+    text-decoration-color: var(--control-text-color, #5c5a55);
+}
+
+/* ========== 8. Highlight  ==mark==  <mark>  ========== */
+mark, #write mark,
+span[md-inline="highlight"] mark,
+.md-pair-s mark {
+    background: linear-gradient(180deg, transparent 55%, var(--mark-wash) 55%);
+    color: inherit;
+    padding: 0 0.1em;
+    border-radius: 1px;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+}
+
+/* ========== 9. Underline  <u>  ========== */
+u, #write u,
+span[md-inline="underline"] u {
+    text-decoration: underline solid var(--accent-color);
+    text-underline-offset: 3px;
+    text-decoration-thickness: 1.5px;
+}
+
+/* ========== 10. Insert  <ins>  ========== */
+ins, #write ins {
+    text-decoration: none;
+    color: var(--ins-color);
+    background: linear-gradient(180deg, transparent 60%, rgba(42, 122, 50, 0.15) 60%);
+    padding: 0 0.08em;
+}
+
+/* ========== 11. Sub / Sup  ~sub~  ^sup^  <sub> <sup>  ========== */
+sub, #write sub {
+    font-size: 0.75em;
+    vertical-align: sub;
+    line-height: 0;
+    color: var(--control-text-color);
+}
+sup, #write sup {
+    font-size: 0.75em;
+    vertical-align: super;
+    line-height: 0;
+    color: var(--control-text-color);
+}
+
+/* ========== 12. Inline code  `code`  <code>  <tt>  ========== */
+code, tt, #write code, #write tt {
+    font-family: var(--font-mono);
+    border: 1px solid var(--inline-code-border-color);
+    background-color: var(--inline-code-bg-color);
+    color: var(--inline-code-color);
+    border-radius: 0.4rem;
+    padding: 0.12em 0.38em 0.14em;
+    font-size: 0.88em;
+    font-weight: 450;
+    box-shadow: inset 0 1px 0 var(--glass-highlight);
+    word-break: break-word;
+}
+
+/* ========== 13. Kbd  <kbd>  ========== */
+kbd, #write kbd {
+    display: inline-block;
+    padding: 0.1em 0.48em;
+    font-family: var(--font-ui);
+    font-size: 0.8em;
+    font-weight: 500;
+    line-height: 1.35;
+    color: var(--kbd-color);
+    background: var(--kbd-bg);
+    border: 1px solid var(--kbd-border);
+    border-bottom-width: 2px;
+    border-radius: 5px;
+    box-shadow: 0 1px 0 var(--kbd-shadow), inset 0 1px 0 var(--glass-highlight);
+    white-space: nowrap;
+}
+
+/* ========== 14. Samp / Var  <samp> <var>  ========== */
+samp, #write samp {
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+    background: var(--samp-bg);
+    color: var(--code-text-color);
+    padding: 0.1em 0.35em;
+    border-radius: 4px;
+    border: 1px dashed var(--border-color);
+}
+var, #write var {
+    font-family: var(--font-mono);
+    font-style: italic;
+    color: var(--code-var2-color);
+    font-size: 0.92em;
+}
+
+/* ========== 15. Abbr / Cite / Q / Dfn / Time / Small ========== */
+abbr[title], #write abbr[title] {
+    text-decoration: underline dotted;
+    text-underline-offset: 3px;
+    cursor: help;
+    text-decoration-color: var(--muted-text-color);
+    border-bottom: none;
+}
+cite, #write cite {
+    font-style: italic;
+    color: var(--cite-color);
+    font-family: var(--font-body);
+}
+cite::before { content: "— "; opacity: 0.45; font-style: normal; }
+q, #write q {
+    font-style: italic;
+    color: var(--quote-text-color);
+}
+q::before { content: "“"; color: var(--accent-color); opacity: 0.55; }
+q::after  { content: "”"; color: var(--accent-color); opacity: 0.55; }
+dfn, #write dfn {
+    font-style: italic;
+    font-weight: 600;
+    color: var(--accent-deep);
+    border-bottom: 1px dashed var(--accent-soft);
+}
+time, #write time {
+    font-family: var(--font-ui);
+    font-size: 0.92em;
+    color: var(--control-text-color);
+    font-variant-numeric: tabular-nums;
+}
+small, #write small {
+    font-size: 0.85em;
+    color: var(--muted-text-color);
+    line-height: 1.5;
+}
+
+/* ========== 16. Blockquote  >  nested >>  ========== */
+blockquote, #write blockquote {
+    border-left: 3px solid var(--quote-border-color);
+    background: linear-gradient(90deg, var(--accent-softer), transparent 72%);
+    padding: 0.2rem 0 0.2rem 1rem;
+    margin: 1.05em 0;
+    color: var(--quote-text-color);
+    border-radius: 0;
+    position: relative;
+}
+blockquote blockquote, #write blockquote blockquote {
+    margin: 0.55em 0;
+    border-left-color: var(--accent-color);
+    background: linear-gradient(90deg, var(--accent-softer), transparent 72%);
+}
+blockquote blockquote blockquote,
+#write blockquote blockquote blockquote {
+    border-left-color: var(--border-strong);
+    background: transparent;
+}
+/* 4–6 layer quotes: still indented, quieter */
+blockquote blockquote blockquote blockquote,
+#write blockquote blockquote blockquote blockquote {
+    border-left-width: 2px;
+    border-left-color: var(--muted-text-color);
+    opacity: 0.98;
+    margin-left: 0.15em;
+}
+blockquote p:first-child { margin-top: 0; }
+blockquote p:last-child { margin-bottom: 0; }
+blockquote footer, blockquote cite {
+    display: block;
+    margin-top: 0.4em;
+    font-size: 0.9em;
+    color: var(--muted-text-color);
+}
+#write blockquote:hover::after { content: none !important; }
+.on-focus-mode blockquote { border-left-color: var(--accent-color); }
+
+/* ========== 17. Lists  - * +  1.  nested  (fixed) ========== */
+/* Top-level lists */
+#write > ul,
+#write > ol,
+#write ul,
+#write ol {
+    margin: 0.55em 0;
+    padding-left: 1.65em;
+    list-style-position: outside;
+}
+
+/* Nested lists: indent only via padding, no absolute ::before guides
+   (absolute guides broke Typora nest layout / markers) */
+#write li > ul,
+#write li > ol {
+    margin: 0.2em 0 0.35em 0.1em;
+    padding-left: 1.35em;
+    border-left: 1px solid var(--border-soft);
+}
+
+#write li {
+    margin: 0.18em 0;
+    padding-left: 0.2em;
+    line-height: 1.65;
+    min-height: 1.5em;
+}
+
+/* Typora wraps list text in <p>; keep block layout so nests stack correctly */
+#write li > p {
+    margin: 0.12em 0;
+    display: block;
+}
+#write li > p:first-child {
+    margin-top: 0;
+}
+#write li > p:last-child {
+    margin-bottom: 0;
+}
+/* Legacy class — never use inline-block here (breaks nested lists) */
+#write li p.first,
+li p.first {
+    display: block;
+}
+
+/* Marker cycle by depth */
+#write ul { list-style-type: disc; }
+#write ul ul { list-style-type: circle; }
+#write ul ul ul { list-style-type: square; }
+#write ul ul ul ul { list-style-type: disc; }
+#write ul ul ul ul ul { list-style-type: circle; }
+#write ul ul ul ul ul ul { list-style-type: square; }
+
+#write ol { list-style-type: decimal; }
+#write ol ol { list-style-type: lower-alpha; }
+#write ol ol ol { list-style-type: lower-roman; }
+#write ol ol ol ol { list-style-type: decimal; }
+#write ol ol ol ol ol { list-style-type: lower-alpha; }
+#write ol ol ol ol ol ol { list-style-type: lower-roman; }
+
+/* 5–6 layer lists: keep readable indent, avoid collapse */
+#write li > ul,
+#write li > ol {
+    margin-top: 0.28em;
+    margin-bottom: 0.28em;
+}
+#write ul ul ul ul,
+#write ol ol ol ol {
+    font-size: 0.985em;
+}
+
+#write ul li::marker {
+    color: var(--accent-color);
+    font-weight: 600;
+}
+#write ol li::marker {
+    color: var(--control-text-color);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    font-family: var(--font-ui);
+}
+
+/* Mixed nest (ul inside ol / ol inside ul) keep readable indent */
+#write ol ul,
+#write ul ol {
+    margin-top: 0.2em;
+}
+
+#write ul:first-child,
+#write ol:first-child { margin-top: 0; }
+#write ul:last-child,
+#write ol:last-child { margin-bottom: 0; }
+
+#write li.md-list-item > p { margin: 0.12em 0; }
+
+/* ========== 18. Task list  - [ ]  - [x]  ========== */
+#write ul.contains-task-list,
+#write .md-task-list,
+#write ul.task-list {
+    list-style: none;
+    padding-left: 0.35em;
+}
+
+#write li.md-task-list-item {
+    list-style: none !important;
+    position: relative;
+    padding-left: 1.55em;
+    min-height: 1.5em;
+}
+
+.md-task-list-item > input,
+#write li.md-task-list-item > input {
+    position: absolute;
+    left: 0.15em;
+    top: 0.28em;
+    margin: 0 !important;
+    accent-color: var(--accent-color);
+    cursor: pointer;
+    z-index: 1;
+}
+
+#write li.md-task-list-item > input[type="checkbox"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 0.95em;
+    height: 0.95em;
+    border: 1.5px solid var(--border-strong);
+    border-radius: 4px;
+    background: var(--elevated-bg);
+    box-shadow: inset 0 1px 0 var(--glass-highlight);
+    transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+#write li.md-task-list-item > input[type="checkbox"]:hover {
+    border-color: var(--accent-color);
+}
+#write li.md-task-list-item > input[type="checkbox"]:checked {
+    background: var(--accent-color);
+    border-color: var(--accent-color);
+    box-shadow: none;
+}
+#write li.md-task-list-item > input[type="checkbox"]:checked::after {
+    content: "";
+    position: absolute;
+    left: 0.24em;
+    top: 0.04em;
+    width: 0.28em;
+    height: 0.5em;
+    border: solid #fff;
+    border-width: 0 1.6px 1.6px 0;
+    transform: rotate(45deg);
+}
+
+/* Nested lists under a task item */
+#write li.md-task-list-item > ul,
+#write li.md-task-list-item > ol {
+    margin-left: 0;
+    padding-left: 1.25em;
+    border-left: 1px solid var(--border-soft);
+}
+
+#write li.md-task-list-item:has(input:checked) > p,
+#write li.md-task-list-item.task-list-done > p {
+    text-decoration: line-through;
+    color: var(--control-text-color);
+    opacity: 0.52;
+}
+
+/* ========== 19. Definition list  <dl><dt><dd>  ========== */
+dl, #write dl { margin: 0.9em 0; }
+dt, #write dt {
+    font-weight: 700;
+    color: var(--accent-deep);
+    margin-top: 0.65rem;
+    font-family: var(--font-ui);
+    font-size: 0.95em;
+    letter-spacing: 0.01em;
+}
+dt:first-child { margin-top: 0; }
+dd, #write dd {
+    margin-left: 1.1rem;
+    margin-bottom: 0.4rem;
+    padding-left: 0.7rem;
+    border-left: 2px solid var(--border-color);
+    color: var(--control-text-color);
+    line-height: 1.6;
+}
+dd p { margin: 0.25em 0; }
+/* Tables after / inside def lists: keep full width (prefer top-level tables in MD) */
+#write dd .md-table-fig,
+#write dl + .md-table-fig,
+#write dl + table {
+    margin-top: 0.45em;
+    margin-bottom: 0.75em;
+}
+/* details + math in tables: see §24 / §50.11 (single source) */
+#write table .md-inline-math {
+    font-size: 1em;
+}
+
+/* ========== 20. Horizontal rule  ---  ***  ___  ========== */
+hr, #write hr {
+    height: 0; padding: 0; margin: 2.1rem 0; border: 0;
+    background: linear-gradient(90deg, transparent, var(--border-color) 12%, var(--border-color) 88%, transparent);
+    background-size: 100% 1px;
+    background-repeat: no-repeat;
+    background-position: center;
+    overflow: visible;
+    position: relative;
+}
+#write hr::before { content: none; }
+.md-hr.md-end-block + h1,
+.md-hr.md-end-block + h2,
+.md-hr.md-end-block + h3,
+.md-hr.md-end-block + h4 { margin-top: 0.35rem !important; }
+/* ========== 21. Tables  | a | b |  (v6 professional + Claude Quiet) ========== */
+/* Default: light grid + sticky thead + zebra + hover
+   Tokens: --table-header-bg --table-grid-color --table-sticky-shadow --table-scroll-fade */
+#write .md-table-fig,
+#write .table-figure,
+.md-table-fig,
+.table-figure {
+    margin: 1.15em 0;
+    overflow-x: auto;
+    overflow-y: visible;
+    -webkit-overflow-scrolling: touch;
+    border-radius: var(--radius-md);
+    background:
+        linear-gradient(90deg, var(--bg-color) 30%, transparent) left center / 1.25rem 100% no-repeat,
+        linear-gradient(270deg, var(--bg-color) 30%, transparent) right center / 1.25rem 100% no-repeat,
+        var(--table-scroll-fade, transparent);
+    background-attachment: local, local, scroll;
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-color) transparent;
+}
+#write .md-table-fig::-webkit-scrollbar,
+.md-table-fig::-webkit-scrollbar { height: 8px; }
+#write .md-table-fig::-webkit-scrollbar-thumb,
+.md-table-fig::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-color);
+    border-radius: var(--radius-pill);
+}
+
+/* v16: 表格随内容宽度，不再强行 100% 铺满（「表格太大」主因） */
+table, #write table {
+    padding: 0;
+    width: auto;
+    max-width: 100%;
+    min-width: 0;
+    border-collapse: collapse;
+    border-spacing: 0;
+    border-top: 1.5px solid var(--table-border-strong-color);
+    border-bottom: 1.5px solid var(--table-border-strong-color);
+    background: transparent;
+    word-break: initial;
+    overflow-wrap: break-word;
+    font-variant-numeric: lining-nums tabular-nums;
+    margin: 0;
+    display: table;
+    font-size: 0.9rem;
+}
+
+table caption,
+#write table caption {
+    caption-side: top;
+    text-align: center;
+    font-family: var(--font-ui);
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--muted-text-color);
+    padding: 0 0 0.55rem 0;
+    letter-spacing: 0.01em;
+}
+
+table tr { border: 0; margin: 0; padding: 0; }
+table thead { background: transparent; }
+table thead tr {
+    border-bottom: 1.5px solid var(--table-border-strong-color);
+}
+
+table thead th,
+#write table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background-color: var(--table-header-bg, var(--meta-bg));
+    box-shadow: 0 1px 0 var(--table-border-strong-color), var(--table-sticky-shadow, 0 2px 6px -2px transparent);
+    vertical-align: bottom;
+}
+
+table tbody tr {
+    border-bottom: 1px solid var(--table-row-border-color);
+    transition: background-color var(--transition-fast);
+}
+table tbody tr:last-child { border-bottom: 0; }
+table tbody tr:nth-child(even) td,
+table tbody tr:nth-child(even) th {
+    background-color: var(--table-zebra);
+}
+table tbody tr:hover td,
+table tbody tr:hover th {
+    background-color: var(--table-hover-color);
+}
+
+table tfoot tr {
+    border-top: 1.5px solid var(--table-border-strong-color);
+}
+table tfoot th,
+table tfoot td,
+#write table tfoot th,
+#write table tfoot td {
+    font-family: var(--font-ui);
+    font-weight: 600;
+    font-size: 0.88rem;
+    color: var(--heading-color);
+    background-color: var(--table-header-bg, var(--meta-bg));
+    vertical-align: top;
+}
+
+table th, #write th {
+    font-family: var(--font-ui);
+    font-weight: 600;
+    border: 0;
+    border-right: 1px solid var(--table-grid-color, transparent);
+    padding: 0.45rem 0.65rem;
+    text-align: left;
+    vertical-align: bottom;
+    color: var(--heading-color);
+    font-size: 0.86rem;
+    line-height: 1.4;
+}
+table td, #write td {
+    border: 0;
+    border-right: 1px solid var(--table-grid-color, transparent);
+    padding: 0.4rem 0.65rem;
+    vertical-align: top;
+    font-size: 0.9rem;
+    line-height: 1.45;
+    color: var(--text-color);
+}
+table th:last-child,
+table td:last-child,
+#write table th:last-child,
+#write table td:last-child {
+    border-right: 0;
+}
+table th:first-child,
+table td:first-child {
+    padding-left: 0.15rem;
+}
+
+table th[align="left"], table td[align="left"],
+table th[style*="text-align: left"], table td[style*="text-align: left"],
+table th[style*="text-align:left"], table td[style*="text-align:left"] { text-align: left; }
+table th[align="center"], table td[align="center"],
+table th[style*="center"], table td[style*="center"] { text-align: center; }
+table th[align="right"], table td[align="right"],
+table th[style*="right"], table td[style*="right"] { text-align: right; }
+
+table td strong, table th strong,
+table td b, table th b { font-weight: 700; color: var(--heading-color); }
+table td em, table th em { color: var(--em-color); }
+table td code, table th code,
+table td tt, table th tt {
+    font-size: 0.84em;
+    padding: 0.08em 0.28em;
+}
+table td a, table th a { font-size: inherit; }
+table td kbd, table th kbd { font-size: 0.78em; }
+table td mark, table th mark { padding: 0.05em 0.2em; }
+table td .md-image, table th .md-image { max-width: 100%; }
+table td .md-math-inline, table th .md-math-inline { font-size: 0.95em; }
+
+.ty-table-edit { margin-bottom: 0.25rem; }
+.ty-table-edit .btn-group-xs > .btn {
+    border: none;
+    background: transparent !important;
+    box-shadow: none !important;
+    color: var(--control-text-color) !important;
+    opacity: 0.45;
+    transition: color var(--transition-fast), opacity var(--transition-fast);
+}
+.ty-table-edit .btn-group-xs > .btn:hover {
+    color: var(--accent-color) !important;
+    opacity: 1;
+}
+.typora-table-drag-area {
+    opacity: 0.35;
+    transition: opacity var(--transition-fast);
+}
+.typora-table-drag-area:hover { opacity: 0.85; }
+
+#write .md-alert table,
+#write details table {
+    font-size: 0.94em;
+    margin: 0.55em 0;
+}
+#write .md-alert table th,
+#write .md-alert table td,
+#write details table th,
+#write details table td {
+    padding: 0.45rem 0.55rem;
+}
+
+/* ========== 22. Images  ![alt](src)  ========== */
+img, #write img {
+    border-radius: var(--radius-md);
+    max-width: 100%;
+    height: auto;
+    border: 1px solid var(--border-soft);
+    box-shadow: var(--shadow-card);
+    transition: box-shadow 0.22s var(--ease-out);
+    background: var(--media-bg);
+}
+#write img:hover {
+    box-shadow: 0 2px 12px var(--shadow-color);
+}
+figure, #write figure {
+    margin: 1.25em 0;
+    text-align: center;
+}
+figcaption, #write figure > figcaption,
+#write p.md-image-caption,
+.md-image-caption {
+    font-size: 0.84rem;
+    color: var(--muted-text-color);
+    text-align: center;
+    margin-top: 0.5rem;
+    font-family: var(--font-ui);
+    line-height: 1.45;
+}
+.md-image > .md-meta {
+    border-radius: 4px;
+    padding: 2px 0 0 4px;
+    font-size: 0.88em;
+    color: var(--muted-text-color);
+    font-family: var(--font-mono);
+}
+/* broken image placeholder */
+#write img[alt]:not([src]),
+#write img[src=""] {
+    border: 1px dashed var(--border-color);
+    min-height: 3rem;
+    padding: 1rem;
+}
+/*
+ * CDP: 加载失败时 Typora 给 .md-img-error，默认 display:none 整块消失。
+ * 改为可见虚线框 + alt 提示，避免版面「缺一块」。
+ */
+#write .md-image.md-img-error {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    min-height: 4.5rem;
+    margin: 1em 0;
+    padding: 1.1rem 1rem;
+    border: 1.5px dashed var(--border-color, rgba(31, 30, 29, 0.22));
+    border-radius: var(--radius-md, 10px);
+    background: var(--meta-bg, #f0eee6);
+    color: var(--control-text-color, #5c5a55);
+    font-family: var(--font-ui);
+    font-size: 0.88rem;
+    line-height: 1.5;
+    text-align: center;
+    box-sizing: border-box;
+}
+#write .md-image.md-img-error img {
+    display: none !important;
+}
+#write .md-image.md-img-error::after {
+    content: "图片无法加载" attr(data-src);
+    display: block;
+}
+#write .md-image.md-img-error[alt]::after {
+    content: "图片无法加载 · " attr(alt);
+}
+
+/* ========== 23. Video / Audio / Iframe  ========== */
+video, #write video,
+audio, #write audio {
+    max-width: 100%;
+    margin: 1em 0;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-soft);
+    background: var(--media-bg);
+    box-shadow: var(--shadow-card);
+}
+audio { width: 100%; height: 2.5rem; }
+iframe, #write iframe {
+    max-width: 100%;
+    margin: 1em 0;
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-card);
+    background: var(--media-bg);
+}
+/* embed containers */
+.md-iframe-container,
+.iframe-container {
+    margin: 1.1em 0;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    border: 1px solid var(--border-soft);
+    box-shadow: var(--shadow-card);
+}
+
+/* ========== 24. Details / Summary  (v18 STOCK-SAFE NEST) ========== */
+/*
+ * 研究结论（Typora 官方 HTML + issue #6408 + CSS-Tricks + 主流主题）：
+ *
+ * A. Typora 把 <details> 整段当 HTML Block，包在 .md-htmlblock-container 里。
+ * B. HTML Block 内：Markdown 不解析；**禁止空行**（空行会拆成两个 HTML Block，
+ *    深层嵌套直接碎掉）—— support.typora.io/HTML/
+ * C. 主流主题（github 等）几乎不改 details 几何，只加轻 chrome。
+ * D. 翻车点（我们 v17.1 踩过）：
+ *    - summary { display:flex } + 隐藏原生 marker + 自定义 ::before
+ *      → 嵌套层点击/展开在 Electron 里不稳定
+ *    - details code { display:block } → 行内 code 变块
+ * E. 正确策略：保留原生 disclosure 三角；只做边框/底色/间距；
+ *    嵌套仅加深背景，不改 display 模型。
+ * F. Mermaid（社区共识）：节点大小靠 init themeVariables.fontSize +
+ *    flowchart.useMaxWidth:false；CSS 只整图缩放，不改节点 font-size。
+ */
+
+/* Typora HTML 容器：给 details 留出可点区域，勿 overflow:hidden */
+#write .md-htmlblock,
+#write .md-htmlblock-container {
+    overflow: visible;
+    max-width: 100%;
+}
+#write .md-htmlblock-container details {
+    /* 确保在 raw HTML 容器内也吃到主题色 */
+    color: var(--text-color);
+}
+
+#write details,
+#write .md-htmlblock-container details,
+details {
+    display: block;
+    box-sizing: border-box;
+    margin: 0.95em 0;
+    padding: 0.35rem 0.9rem 0.75rem 0.9rem;
+    background: var(--details-bg, var(--elevated-bg, #fffcf7));
+    border: 1px solid var(--border-soft, rgba(31, 30, 29, 0.12));
+    border-left: 3px solid var(--accent-color, #d97757);
+    border-radius: 0 var(--radius-md, 10px) var(--radius-md, 10px) 0;
+    overflow: visible;
+    max-width: 100%;
+    color: var(--text-color);
+}
+
+/*
+ * summary：保留原生三角（list-item / webkit marker）
+ * 参考 CSS-Tricks：cursor:pointer；子块改为 inline 防掉行
+ */
+#write details > summary,
+#write .md-htmlblock-container details > summary,
+details > summary {
+    display: list-item;
+    cursor: pointer;
+    font-family: var(--font-ui), "Microsoft YaHei UI", sans-serif;
+    font-weight: 600;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: var(--heading-color, #141413);
+    padding: 0.35rem 0.25rem 0.4rem 0.15rem;
+    margin: 0;
+    outline: none;
+    /* 不要 user-select:none —— 嵌套层选中/点击更稳 */
+}
+#write details > summary > *,
+#write .md-htmlblock-container details > summary > *,
+details > summary > * {
+    display: inline;
+}
+#write details > summary:hover,
+details > summary:hover {
+    color: var(--accent-color, #d97757);
+}
+#write details[open] > summary,
+details[open] > summary {
+    color: var(--accent-deep, var(--accent-color));
+    margin-bottom: 0.35rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--border-soft, rgba(31, 30, 29, 0.1));
+}
+
+/* 内容间距（不改 display） */
+#write details p,
+#write .md-htmlblock-container details p {
+    margin: 0.4em 0;
+    line-height: 1.65;
+}
+#write details ul,
+#write details ol,
+#write .md-htmlblock-container details ul,
+#write .md-htmlblock-container details ol {
+    margin: 0.4em 0 0.5em;
+    padding-left: 1.4em;
+}
+#write details li {
+    margin: 0.12em 0;
+    line-height: 1.55;
+}
+
+/* pre 代码块：只打 pre，绝不打裸 code */
+#write details pre,
+#write .md-htmlblock-container details pre,
+details pre {
+    display: block;
+    box-sizing: border-box;
+    margin: 0.55em 0;
+    padding: 0.65rem 0.85rem;
+    font-family: var(--font-mono), "Cascadia Code", Consolas, monospace;
+    font-size: 0.88rem;
+    line-height: 1.55;
+    color: var(--code-text-color, #1c1b19);
+    background: var(--code-bg-color, rgba(255, 255, 255, 0.78));
+    border: 1px solid var(--code-border-color, rgba(31, 30, 29, 0.12));
+    border-radius: var(--radius-md, 10px);
+    white-space: pre;
+    overflow-x: auto;
+    max-width: 100%;
+}
+#write details pre > code,
+#write .md-htmlblock-container details pre > code,
+details pre > code {
+    font-family: inherit;
+    font-size: inherit;
+    color: inherit;
+    background: transparent;
+    border: 0;
+    padding: 0;
+    white-space: inherit;
+}
+
+/* 行内 code：强制 inline（防历史规则泄漏） */
+#write details :not(pre) > code,
+#write details p > code,
+#write details li > code,
+#write details td > code,
+#write details th > code,
+#write details summary > code,
+#write .md-htmlblock-container details :not(pre) > code {
+    display: inline;
+    font-family: var(--font-mono), "Cascadia Code", Consolas, monospace;
+    font-size: 0.88em;
+    color: var(--inline-code-color, #8a2424);
+    background: var(--inline-code-bg-color, rgba(61, 61, 58, 0.06));
+    border: 1px solid var(--inline-code-border-color, rgba(31, 30, 29, 0.1));
+    border-radius: 4px;
+    padding: 0.06em 0.3em;
+    white-space: break-spaces;
+}
+
+/* 表格 */
+#write details table,
+#write .md-htmlblock-container details table,
+details table {
+    border-collapse: collapse;
+    margin: 0.5em 0;
+    width: auto;
+    max-width: 100%;
+    font-size: 0.9rem;
+}
+#write details th,
+#write details td,
+#write .md-htmlblock-container details th,
+#write .md-htmlblock-container details td {
+    border: 1px solid var(--table-grid-color, var(--border-soft));
+    padding: 0.38rem 0.55rem;
+    vertical-align: top;
+}
+#write details th,
+#write .md-htmlblock-container details th {
+    background: var(--table-header-bg, var(--meta-bg));
+    font-family: var(--font-ui);
+    font-weight: 600;
+}
+
+/*
+ * 深层嵌套：只改底色/左边，不改 display / position / transform
+ * L1 陶土左边 · L2 浅灰底 · L3 更浅 + 虚线边
+ */
+#write details details,
+#write .md-htmlblock-container details details,
+details details {
+    margin: 0.5em 0 0.45em;
+    padding: 0.3rem 0.75rem 0.6rem;
+    background: var(--meta-bg, #f0eee6);
+    border: 1px solid var(--border-soft);
+    border-left: 3px solid var(--border-strong, rgba(31, 30, 29, 0.22));
+    border-radius: 0 var(--radius-sm, 6px) var(--radius-sm, 6px) 0;
+    box-shadow: none;
+}
+#write details details details,
+#write .md-htmlblock-container details details details,
+details details details {
+    background: var(--panel-bg, #f8f6ef);
+    border-left-color: var(--muted-text-color, #8a8880);
+    border-left-style: solid;
+    border-style: solid;
+    border-left-width: 3px;
+    opacity: 0.98;
+}
+#write details details details details,
+details details details details {
+    background: var(--elevated-bg, #fffcf7);
+    border-left-style: dashed;
+    border-left-color: var(--accent-color, #d97757);
+}
+#write details details > summary,
+details details > summary {
+    font-size: 0.92rem;
+}
+
+/* 编辑态 raw 源码视图：别把源码框撑坏 */
+#write .md-htmlblock.md-focus .md-htmlblock-container details,
+#write .md-raw-html-src details {
+    max-width: 100%;
+}
+
+/* ========== 25. Code fences  ```  (stock-CM friendly + isolate from diagrams) ========== */
+/*
+ * NORMAL code fences must NEVER get diagram rules (transform/nowrap/wide card).
+ * Stock Typora: .md-fences { display:block; white-space:pre; position:relative }
+ */
+
+/* Base look for ALL fences (diagram overrides come later, more specific) */
+/* 仅普通代码围栏 — 切勿套到 mermaid advanced（会继承 0.9rem/mono，节点变小/布局怪） */
+.md-fences:not(.md-fences-advanced),
+pre.md-fences:not(.md-fences-advanced) {
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    color: var(--code-text-color);
+    background-color: var(--code-bg-color);
+    border: 1px solid var(--code-border-color);
+    border-radius: var(--radius-md, 10px);
+    margin: 1em 0;
+    box-shadow: none;
+}
+
+/* NORMAL (non-diagram) fences — hard isolate from §26 diagram chrome */
+#write .md-fences:not(.md-fences-advanced),
+.md-fences:not(.md-fences-advanced),
+#write pre.md-fences:not(.md-fences-advanced) {
+    display: block !important;
+    position: relative !important;
+    white-space: pre !important;
+    overflow: visible !important;
+    text-align: left !important;
+    height: auto !important;
+    min-height: 2.75rem !important;
+    width: auto !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    transform: none !important;
+    zoom: 1 !important;
+    padding: 0.65rem 0.85rem 0.75rem 0.85rem !important;
+    background-color: var(--code-bg-color) !important;
+    border: 1px solid var(--code-border-color) !important;
+    border-top: 1px solid var(--code-border-color) !important;
+    border-radius: var(--radius-md, 10px) !important;
+    box-sizing: border-box !important;
+    contain: none !important;
+}
+
+/* When line numbers on: keep left padding smaller so gutter fits */
+#write .md-fences.md-fences-with-lineno:not(.md-fences-advanced),
+.md-fences.md-fences-with-lineno:not(.md-fences-advanced) {
+    padding-left: 0 !important;
+}
+
+/* strip decorative pseudo on normal code fences ONLY */
+.md-fences:not(.md-fences-advanced)::before,
+.md-fences:not(.md-fences-advanced)::after {
+    content: none !important;
+    display: none !important;
+}
+
+/* CodeMirror inside NORMAL fences must stay visible & measurable */
+#write .md-fences:not(.md-fences-advanced) .CodeMirror,
+.md-fences:not(.md-fences-advanced) .CodeMirror {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    height: auto !important;
+    min-height: 1.5em !important;
+    width: 100% !important;
+    transform: none !important;
+    zoom: 1 !important;
+    white-space: pre !important;
+}
+
+/* plain indented pre (rare in Typora) */
+#write > pre:not(.md-fences):not(.md-meta-block) {
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+    color: var(--code-text-color);
+    background: var(--code-bg-color);
+    border: 1px solid var(--code-border-color);
+    border-radius: var(--radius-md);
+    padding: 10px 12px;
+    margin: 1em 0;
+    overflow: auto;
+}
+
+/* inline code inside fences must not look like pills */
+.md-fences code,
+.md-fences tt {
+    border: 0 !important;
+    background: transparent !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    color: inherit !important;
+    font-size: inherit !important;
+}
+
+/* language input / tooltip — visual only, no layout shift rules */
+.md-fences .code-tooltip,
+.md-fences .code-tooltip.md-tooltip-remove {
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+}
+.md-fences .code-tooltip .ty-input,
+.ty-input.ty-input-after.ty-cm-lang-input {
+    color: var(--pre-lang-color) !important;
+    font-family: var(--font-ui) !important;
+    font-size: 12px !important;
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+/* CodeMirror: backgrounds + token colors only */
+.md-fences .CodeMirror,
+.md-fences .CodeMirror-scroll,
+.md-fences .CodeMirror-sizer,
+.md-fences .CodeMirror-lines,
+.md-fences .CodeMirror-code,
+.md-fences .CodeMirror pre {
+    background: transparent !important;
+    font-family: inherit !important;
+}
+
+.md-fences .CodeMirror {
+    color: var(--code-text-color) !important;
+    /* no height — let Typora/CM decide (height:auto caused wrong first layout) */
+}
+
+/* Line numbers — COLOR ONLY (geometry = Typora default) */
+.md-fences .CodeMirror-gutters {
+    background-color: var(--meta-bg) !important;
+    border-right: 1px solid var(--code-border-color) !important;
+}
+.md-fences .CodeMirror-linenumber {
+    color: var(--code-muted-color) !important;
+}
+.md-fences .CodeMirror-guttermarker,
+.md-fences .CodeMirror-guttermarker-subtle {
+    color: var(--code-muted-color) !important;
+}
+.md-fences .CodeMirror-activeline-gutter .CodeMirror-linenumber {
+    color: var(--accent-color) !important;
+}
+.md-fences .CodeMirror-activeline-background {
+    background: var(--accent-softer) !important;
+}
+.md-fences .CodeMirror-cursor {
+    border-left: 1px solid var(--accent-color) !important;
+}
+.md-fences .CodeMirror-selected,
+.md-fences .CodeMirror-selectedtext {
+    background: var(--select-text-bg-color) !important;
+}
+.md-fences .CodeMirror-gutter-filler,
+.md-fences .CodeMirror-scrollbar-filler {
+    background-color: var(--meta-bg) !important;
+}
+
+/* Source mode: same restraint */
+#typora-source .CodeMirror {
+    color: var(--code-text-color) !important;
+    font-family: var(--font-mono) !important;
+}
+#typora-source .CodeMirror-gutters {
+    background-color: var(--meta-bg) !important;
+    border-right: 1px solid var(--border-color) !important;
+}
+#typora-source .CodeMirror-linenumber {
+    color: var(--code-muted-color) !important;
+}
+#typora-source .CodeMirror-activeline-gutter .CodeMirror-linenumber {
+    color: var(--accent-color) !important;
+}
+#typora-source .CodeMirror-activeline-background {
+    background: var(--accent-softer) !important;
+}
+#typora-source .CodeMirror-cursor {
+    border-left-color: var(--accent-color) !important;
+}
+
+/* syntax colors */
+.md-fences .cm-comment,
+.md-fences .cm-meta { color: var(--code-muted-color) !important; }
+.md-fences .cm-keyword,
+.md-fences .cm-builtin { color: var(--code-keyword-color) !important; }
+.md-fences .cm-def { color: var(--code-def-color) !important; }
+.md-fences .cm-string,
+.md-fences .cm-string-2 { color: var(--code-string-color) !important; }
+.md-fences .cm-number { color: var(--code-number-color) !important; }
+.md-fences .cm-tag,
+.md-fences .cm-attribute,
+.md-fences .cm-property,
+.md-fences .cm-qualifier,
+.md-fences .cm-link { color: var(--code-symbol-color) !important; }
+.md-fences .cm-type,
+.md-fences .cm-header { color: var(--code-type-color) !important; }
+.md-fences .cm-variable-2,
+.md-fences .cm-variable-3,
+.md-fences .cm-atom { color: var(--code-var2-color) !important; }
+.md-fences .cm-operator,
+.md-fences .cm-variable,
+.md-fences .cm-bracket,
+.md-fences .cm-punctuation { color: var(--code-text-color) !important; }
+.md-fences .cm-error { color: #c0392b !important; }
+.md-fences .cm-hr { color: var(--muted-text-color) !important; }
+.md-fences .cm-quote { color: var(--quote-text-color) !important; font-style: italic; }
+
+.md-lang { color: var(--lang-color); }
+.md-tag { color: var(--tag-color); opacity: 1; }
+.md-comment { color: var(--accent-color); font-style: italic; opacity: 0.85; }
+
+/* ========== 26. Diagrams  (v32 见文末 §90 终裁) ========== */
+/*
+ * Mermaid 几何/居中的最终规则放在文件最末 §90，保证压过前面所有规则。
+ * 此处只保留非 mermaid 的 flow/echarts 卡片。
+ */
+
+.md-diagram-panel-error {
+    color: var(--accent-rose, #b45f51);
+}
+
+/* flow / echarts 轻卡片（不套 mermaid） */
+#write .md-fences.md-fences-advanced:not([lang="mermaid"]),
+.md-fences.md-fences-advanced:not([lang="mermaid"]) {
+    position: relative;
+    margin: 1.1em 0;
+    font-family: var(--font-ui), system-ui, sans-serif;
+    font-size: 1rem;
+    background: var(--diagram-bg, #f7f3eb);
+    border: 1px solid var(--diagram-border, rgba(31, 30, 29, 0.12));
+    border-top: 3px solid var(--accent-color, #d97757);
+    border-radius: var(--radius-md, 10px);
+    max-width: 100%;
+    overflow: visible;
+}
+
+.md-fences.md-fences-advanced:not([lang="mermaid"]):not(.md-focus) {
+    padding: 1.1rem 0.65rem 0.45rem !important;
+    white-space: nowrap !important;
+}
+
+.md-fences.md-fences-advanced:not([lang="mermaid"]).md-focus {
+    padding: 1.15rem 0.7rem 0.5rem !important;
+    white-space: normal !important;
+}
+
+#write .md-fences.md-fences-advanced:not([lang="mermaid"])[lang]::before,
+.md-fences.md-fences-advanced:not([lang="mermaid"])[lang]::before {
+    content: attr(lang);
+    position: absolute;
+    top: 0.3rem;
+    right: 0.45rem;
+    z-index: 5;
+    font-size: 0.65rem;
+    font-weight: 600;
+    font-family: var(--font-ui);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--accent-color);
+    background: var(--diagram-badge-bg, rgba(217, 119, 87, 0.12));
+    border: 1px solid var(--diagram-badge-border, rgba(196, 92, 62, 0.3));
+    border-radius: 999px;
+    padding: 0.12rem 0.4rem;
+    pointer-events: none;
+}
+
+.md-fences.md-fences-advanced .CodeMirror {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+}
+
+.md-fences.md-fences-advanced[lang="echarts"] .md-diagram-panel-preview,
+.md-fences.md-fences-advanced[lang="chart"] .md-diagram-panel-preview {
+    min-height: 16rem;
+}
+
+[lang="flow"] .md-diagram-panel-preview {
+    zoom: var(--diagram-flow-zoom, 1.1);
+    text-align: center !important;
+}
+
+@media print {
+    .md-fences.md-fences-advanced { break-inside: avoid; }
+    .md-fences.md-fences-advanced[lang]::before { display: none !important; }
+}
+
+/* ========== end §26 ========== */
+/* ========== 27. Math  $inline$  $$block$$  (v9 nested + display size) ========== */
+.md-inline-math,
+.md-inline-math .MathJax,
+.md-inline-math .MathJax_SVG,
+.md-inline-math mjx-container,
+#write .md-inline-math mjx-container {
+    font-size: var(--math-inline-scale, 1.06em) !important;
+    color: var(--text-color);
+    vertical-align: middle;
+}
+
+/* Display / block equations — larger, card-like, scroll for wide matrices */
+.md-math-block,
+.mathjax-block,
+#write .md-math-block,
+#write .mathjax-block {
+    margin: 1.15em 0;
+    padding: var(--math-block-pad, 0.95rem 1.15rem);
+    border-radius: var(--radius-md);
+    overflow-x: auto;
+    overflow-y: hidden;
+    text-align: center;
+    background: var(--math-block-bg, var(--elevated-bg, transparent));
+    border: 1px solid var(--math-block-border, var(--border-soft, transparent));
+    box-shadow: var(--math-block-shadow, none);
+    -webkit-overflow-scrolling: touch;
+}
+.md-math-block .md-math-container,
+.md-math-block mjx-container,
+.md-math-block .MathJax,
+.mathjax-block mjx-container,
+.mathjax-block .MathJax,
+#write .md-math-block mjx-container[jax="CHTML"],
+#write .md-math-block mjx-container[jax="SVG"],
+#write .md-math-block mjx-container[display="true"] {
+    font-size: var(--math-display-scale, 1.18em) !important;
+    color: var(--text-color) !important;
+    max-width: 100%;
+    margin: 0.15em auto !important;
+}
+
+/* Nested contexts: list / quote / details / table / alert */
+#write li > .md-math-block,
+#write li > .mathjax-block,
+#write blockquote .md-math-block,
+#write blockquote .mathjax-block,
+#write details .md-math-block,
+#write .md-alert .md-math-block,
+#write td .md-math-block,
+#write th .md-math-block {
+    margin: 0.65em 0;
+    padding: 0.7rem 0.85rem;
+    font-size: 1em;
+}
+#write li .md-inline-math,
+#write blockquote .md-inline-math,
+#write details .md-inline-math,
+#write td .md-inline-math,
+#write th .md-inline-math,
+#write .md-alert .md-inline-math {
+    font-size: var(--math-inline-scale, 1.05em) !important;
+}
+
+/* Deep list: keep math from exploding line-height */
+#write li .md-inline-math mjx-container {
+    line-height: 1.2 !important;
+}
+
+.md-math-block:hover .md-math-container,
+.mathjax-block:hover {
+    background-color: transparent !important;
+    border-radius: var(--radius-md);
+}
+.mathjax-block > .code-tooltip { bottom: 0.375rem; }
+.md-mathjax-midline { background: var(--meta-bg); }
+.md-rawblock-control.md-rawblock-before,
+.md-rawblock-control.md-rawblock-input.md-mathblock-input,
+.md-rawblock-control.md-rawblock-after {
+    background-color: var(--hover-color);
+}
+.md-rawblock-tooltip.md-rawblock-control { background-color: transparent !important; }
+
+/* Wide matrices: thin scrollbar (visible, not hidden — nested QA needs scroll cue) */
+.md-math-container,
+.md-math-block,
+.mathjax-block {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-color) transparent;
+}
+.md-math-block::-webkit-scrollbar,
+.md-math-container::-webkit-scrollbar {
+    height: 6px;
+    width: 6px;
+}
+.md-math-block::-webkit-scrollbar-thumb,
+.md-math-container::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-color);
+    border-radius: 99px;
+}
+
+/* ========== 28. YAML front matter  ========== */
+#write pre.md-meta-block,
+.md-meta-block {
+    padding: 0.95rem 1.15rem;
+    font-size: 0.84rem;
+    line-height: 1.55;
+    font-family: var(--font-mono);
+    background: linear-gradient(90deg, var(--accent-softer), transparent 40%), var(--meta-bg);
+    border: 1px solid var(--border-soft);
+    border-left: 3px solid var(--accent-color);
+    border-radius: var(--radius-md);
+    color: var(--control-text-color);
+    margin-top: 0 !important;
+    margin-bottom: 1.35rem;
+    box-shadow: 0 1px 0 var(--glass-highlight) inset;
+}
+
+/* ========== 29. TOC  [TOC]  ========== */
+.md-toc, #write .md-toc {
+    margin-top: 1.35rem;
+    padding: 1.15rem 1.3rem 1.15rem;
+    background: linear-gradient(180deg, rgba(255,255,255,0.5), transparent), var(--panel-bg);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+    position: relative;
+    overflow: hidden;
+}
+.md-toc::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--accent-color), var(--accent-blue), var(--accent-green));
+    opacity: 0.75;
+}
+.md-toc::after {
+    content: "CONTENTS";
+    display: block;
+    font-family: var(--font-ui);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--muted-text-color);
+    margin-bottom: 0.55rem;
+    margin-top: 0.15rem;
+}
+.md-toc-item, .md-toc-h1, .md-toc-h2, .md-toc-h3,
+.md-toc-h4, .md-toc-h5, .md-toc-h6 {
+    font-family: var(--font-ui);
+    line-height: 1.55;
+}
+.md-toc-h1 { font-weight: 600; margin-top: 0.35em; }
+.md-toc-h2 { padding-left: 0.85em; }
+.md-toc-h3 { padding-left: 1.7em; font-size: 0.95em; }
+.md-toc-h4 { padding-left: 2.55em; font-size: 0.9em; color: var(--control-text-color); }
+.md-toc-h5, .md-toc-h6 { padding-left: 3.2em; font-size: 0.88em; color: var(--muted-text-color); }
+.md-toc a {
+    color: var(--text-color);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+}
+.md-toc a:hover { color: var(--accent-color); }
+
+/* ========== 30. Footnotes  [^1]  ========== */
+.footnotes, .footnotes-area, #write .footnotes {
+    font-size: 0.9em;
+    color: var(--control-text-color);
+    border-top: 1px solid var(--border-color);
+    margin-top: 2.25rem;
+    padding-top: 0.85rem;
+    font-family: var(--font-body);
+}
+.footnotes ol { padding-left: 1.25rem; }
+.footnotes li { margin: 0.4em 0; line-height: 1.55; }
+.footnotes hr { display: none; }
+sup.md-footnote, #write sup.md-footnote {
+    color: var(--accent-deep) !important;
+    font-family: var(--font-ui) !important;
+    font-size: 0.55em !important;
+    font-weight: 600;
+    background: transparent !important;
+    border: 0 !important;
+    padding: 0 !important;
+    top: -1.1em;
+    margin-left: 0.04em;
+}
+sup.md-footnote:hover { color: var(--accent-hover) !important; }
+a.footnote-backref, .footnote-backref {
+    color: var(--accent-color);
+    text-decoration: none;
+    font-family: var(--font-ui);
+    margin-left: 0.25em;
+}
+.code-tooltip.md-hover-tip {
+    padding: 0 !important;
+    background: #fffaf1 !important;
+    color: #2d2925 !important;
+    border: 1px solid rgba(217, 119, 87, 0.28) !important;
+    border-radius: var(--radius-md) !important;
+    box-shadow: 0 12px 32px rgba(70, 44, 22, 0.14) !important;
+    max-width: min(32rem, calc(100vw - 48px));
+    animation: claude-like-tip-in 90ms var(--ease-out) both;
+}
+.md-hover-tip .code-tooltip-content {
+    padding: 0.7rem 0.85rem !important;
+    line-height: 1.45 !important;
+}
+.md-hover-tip .md-arrow::after {
+    background: #fffaf1 !important;
+    border-left: 1px solid rgba(217, 119, 87, 0.28) !important;
+    border-top: 1px solid rgba(217, 119, 87, 0.28) !important;
+}
+@keyframes claude-like-tip-in {
+    from { opacity: 0; transform: translateY(-3px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ========== 31. GFM Alerts  > [!NOTE]  ========== */
+#write .md-alert {
+    --alert-accent: var(--accent-color);
+    --alert-bg: var(--alert-bg-default);
+    --alert-bg-soft: var(--alert-bg-soft-default);
+    --alert-wash: var(--accent-soft);
+    --alert-border: var(--border-soft);
+    position: relative;
+    margin: 1rem 0;
+    padding: 0.78rem 1rem 0.85rem 1.05rem;
+    color: var(--text-color);
+    background:
+        linear-gradient(180deg, var(--alert-bg), var(--alert-bg-soft)),
+        linear-gradient(90deg, var(--alert-wash), transparent 40%);
+    border: 1px solid var(--alert-border);
+    border-left: 3px solid var(--alert-accent);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-card);
+}
+#write .md-alert-note {
+    --alert-accent: var(--accent-blue);
+    --alert-bg: var(--alert-note-bg);
+    --alert-bg-soft: var(--alert-note-bg-soft);
+    --alert-wash: var(--alert-note-wash);
+    --alert-border: var(--alert-note-border);
+}
+#write .md-alert-tip {
+    --alert-accent: var(--accent-green);
+    --alert-bg: var(--alert-tip-bg);
+    --alert-bg-soft: var(--alert-tip-bg-soft);
+    --alert-wash: var(--alert-tip-wash);
+    --alert-border: var(--alert-tip-border);
+}
+#write .md-alert-important {
+    --alert-accent: var(--accent-purple);
+    --alert-bg: var(--alert-important-bg);
+    --alert-bg-soft: var(--alert-important-bg-soft);
+    --alert-wash: var(--alert-important-wash);
+    --alert-border: var(--alert-important-border);
+}
+#write .md-alert-warning {
+    --alert-accent: var(--accent-gold);
+    --alert-bg: var(--alert-warning-bg);
+    --alert-bg-soft: var(--alert-warning-bg-soft);
+    --alert-wash: var(--alert-warning-wash);
+    --alert-border: var(--alert-warning-border);
+}
+#write .md-alert-caution {
+    --alert-accent: var(--accent-rose);
+    --alert-bg: var(--alert-caution-bg);
+    --alert-bg-soft: var(--alert-caution-bg-soft);
+    --alert-wash: var(--alert-caution-wash);
+    --alert-border: var(--alert-caution-border);
+}
+#write .md-alert-text {
+    display: flex; align-items: center;
+    margin: 0 0 0.35rem;
+    color: var(--alert-accent) !important;
+    font-family: var(--font-ui);
+    font-size: 0.78rem; font-weight: 600; line-height: 1.2;
+    letter-spacing: 0.02em;
+}
+#write .md-alert-text svg {
+    width: 1rem; height: 1rem; fill: currentColor; margin-right: 0.4rem;
+}
+#write .md-alert p { padding: 0; margin: 0.3rem 0 0; line-height: 1.65; }
+#write .md-alert p:first-child { margin-top: 0; }
+#write .md-alert ul, #write .md-alert ol { margin: 0.35rem 0 0; padding-left: 1.25rem; }
+#write .md-alert code {
+    background-color: var(--inline-code-bg-color);
+    border-color: var(--alert-border);
+    color: inherit;
+}
+#write .md-alert .md-fences .CodeMirror,
+#write .md-alert .md-fences .CodeMirror-scroll,
+#write .md-alert .md-fences .CodeMirror-lines {
+    background: transparent !important;
+}
+#write .md-alert .md-fences .CodeMirror-gutters {
+    background-color: var(--meta-bg) !important;
+    border-right: 1px solid var(--code-border-color) !important;
+}
+#write .md-alert .md-fences .CodeMirror-linenumber {
+    color: var(--code-muted-color) !important;
+}
+/* ========== 32. Ruby  <ruby><rt>  ========== */
+/* Ruby only. Other semantic inlines: kbd §13 · samp/var §14 · abbr/cite/q/dfn/time/small §15 · emoji §34 */
+ruby, #write ruby {
+    ruby-align: center;
+    font-family: var(--font-body);
+}
+rt, #write rt {
+    font-size: 0.65em;
+    color: var(--accent-color);
+    font-family: var(--font-ui);
+    font-weight: 500;
+    opacity: 0.85;
+}
+rp, #write rp { color: var(--muted-text-color); }
+
+/* ========== 33. HTML blocks / misc semantic ========== */
+address, #write address {
+    font-style: italic;
+    color: var(--control-text-color);
+    margin: 0.8em 0;
+    padding-left: 0.75rem;
+    border-left: 2px solid var(--border-color);
+}
+#write article, #write section, #write aside {
+    margin: 1em 0;
+}
+#write aside {
+    padding: 0.75rem 1rem;
+    background: var(--panel-bg);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-soft);
+    color: var(--control-text-color);
+    font-size: 0.95em;
+}
+#write header.md-html-block,
+#write footer.md-html-block {
+    margin: 1em 0;
+    color: var(--muted-text-color);
+    font-family: var(--font-ui);
+    font-size: 0.9em;
+}
+
+/* HTML comment nodes in source-ish views */
+.md-html-inline,
+span[md-inline="html"] {
+    font-family: var(--font-mono);
+    font-size: 0.88em;
+    color: var(--tag-color);
+    background: var(--samp-bg);
+    padding: 0.05em 0.3em;
+    border-radius: 3px;
+}
+
+/* raw HTML blocks */
+.md-rawblock, .md-html-block {
+    margin: 0.75em 0;
+}
+.md-rawblock > .md-rawblock-tooltip {
+    font-family: var(--font-ui);
+    font-size: 0.75rem;
+    color: var(--muted-text-color);
+}
+
+/* ========== 34. Emoji  :emoji:  (Typora renders as img/span)  ========== */
+#write img.emoji,
+#write .emoji,
+.emoji {
+    height: 1.15em;
+    width: 1.15em;
+    margin: 0 0.05em;
+    vertical-align: -0.15em;
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    border-radius: 0 !important;
+}
+
+/* ========== 35. Typora meta / expand markers ========== */
+#write .md-pair-s.md-expand > .md-meta.md-before,
+#write .md-pair-s.md-expand > .md-meta.md-after {
+    display: inline-block !important;
+    width: 0 !important; height: 0 !important;
+    overflow: hidden !important;
+    font-size: 0 !important; padding: 0 !important; margin: 0 !important;
+    opacity: 0 !important;
+}
+#write .md-pair-s.md-expand { padding: 0 !important; }
+
+/* link def / ref definition at bottom */
+#write .md-def-name,
+#write .md-def-url {
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    color: var(--muted-text-color);
+}
+#write .md-def-name {
+    color: var(--accent-deep);
+    font-weight: 600;
+}
+
+/* escape characters display */
+#write .md-escape { opacity: 0.55; }
+
+/* soft break visualization when show whitespace (subtle) */
+#write .md-softbreak { }
+
+/* ========== 36. Source mode (syntax colors; CM geometry untouched) ========== */
+#typora-source .cm-s-inner .cm-header { color: var(--accent-deep) !important; font-weight: 700; }
+#typora-source .cm-s-inner .cm-link { color: var(--accent-blue) !important; }
+#typora-source .cm-s-inner .cm-string { color: var(--code-string-color) !important; }
+#typora-source .cm-s-inner .cm-comment { color: var(--code-muted-color) !important; }
+#typora-source .cm-s-inner .cm-operator,
+#typora-source .cm-s-inner .cm-property,
+#typora-source .cm-s-inner .cm-variable,
+#typora-source .cm-s-inner .cm-bracket { color: var(--code-text-color) !important; }
+
+/* ========== 37. Sidebar ========== */
+.sidebar-tabs { border-bottom: none; }
+#typora-sidebar {
+    background-color: var(--side-bar-bg-color);
+    background-image: none;
+    border: none;
+    border-right: 1px solid var(--border-soft);
+    border-radius: 0;
+    margin: 0;
+    height: 100% !important;
+    box-shadow: none;
+    overflow: hidden;
+}
+#typora-sidebar,
+#sidebar-content, #file-library, #file-library-list, #file-library-tree,
+#outline-content, .sidebar-content, .sidebar-content-content,
+.file-list-item, .file-node-content, .outline-item, .outline-label, .ty-side-sort-btn {
+    font-family: var(--font-ui) !important;
+    color: var(--text-color);
+}
+#file-library-list *:not(.fa):not(.file-node-icon):not(.file-node-open-state),
+#file-library-tree *:not(.fa):not(.file-node-icon):not(.file-node-open-state),
+#outline-content *:not(.fa):not(.outline-expander),
+.sidebar-tabs, .sidebar-tabs * { font-family: var(--font-ui) !important; }
+
+.file-list-item-file-name, .file-list-item-file-ext-part,
+.file-list-item-summary, .file-list-item-parent-loc,
+.file-node-title, .file-node-title-name-part, .file-node-title-ext-part,
+.outline-label, .outline-item span { font-family: var(--font-ui) !important; }
+
+.file-list-item-summary, .file-list-item-parent-loc,
+.file-node-icon, .file-node-open-state, .outline-expander {
+    color: var(--control-text-color);
+}
+.file-list-item, .outline-item {
+    border-radius: 8px;
+    margin: 1px 6px;
+    transition: background-color var(--transition-fast);
+}
+.outline-item:hover, .file-list-item:hover,
+.ty-side-sort-btn.active, .outline-expander:hover {
+    background-color: var(--item-hover-bg-color);
+}
+.file-list-item.active,
+.file-tree-node.active > .file-node-background,
+.outline-item.active {
+    background-color: var(--accent-strong);
+    box-shadow: inset 3px 0 0 var(--accent-color);
+}
+.file-list-item.active,
+.file-tree-node.active > .file-node-content,
+.outline-item.active { color: var(--heading-color); }
+
+.file-list-item-file-ext-part, .file-node-title-ext-part {
+    opacity: 0.55; color: var(--muted-text-color);
+}
+.file-list-item.active .file-list-item-file-ext-part,
+.file-tree-node.active .file-node-title-ext-part {
+    color: var(--heading-color); opacity: 0.75;
+}
+.file-node-content:hover .file-node-icon,
+.file-node-content:hover .file-node-open-state { visibility: visible; }
+.mac-seamless-mode #typora-sidebar { background-color: var(--side-bar-bg-color); }
+
+/* outline level indent colors */
+#outline-content .outline-h1 .outline-label { font-weight: 600; color: var(--heading-color); }
+#outline-content .outline-h2 .outline-label { color: var(--text-color); }
+#outline-content .outline-h3 .outline-label { color: var(--control-text-color); font-size: 0.95em; }
+#outline-content .outline-h4 .outline-label,
+#outline-content .outline-h5 .outline-label,
+#outline-content .outline-h6 .outline-label {
+    color: var(--muted-text-color); font-size: 0.9em;
+}
+
+/* ========== 38. Quick open / menus / shell ========== */
+#typora-quick-open {
+    border: 1px solid var(--border-color);
+    background-color: var(--panel-bg);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 22px 56px var(--shadow-strong);
+    overflow: hidden;
+}
+#typora-quick-open-item {
+    background-color: var(--elevated-bg);
+    border-color: var(--border-soft);
+    border-style: solid; border-width: 1px;
+    border-radius: 8px;
+}
+
+header, .context-menu, .megamenu-content, footer { font-family: var(--font-ui); }
+
+.dropdown-menu {
+    background-color: var(--elevated-bg);
+    border-color: var(--border-color);
+    border-radius: 12px;
+    box-shadow: 0 18px 48px var(--shadow-strong);
+    padding: 6px 0;
+    animation: claude-like-menu-in 130ms var(--ease-out) both;
+}
+.dropdown-menu .divider {
+    border-color: var(--border-color); opacity: 0.55; margin: 5px 0;
+}
+@keyframes claude-like-menu-in {
+    from { opacity: 0; transform: translateY(-5px) scale(0.985); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .dropdown-menu, .file-list-item, .outline-item, a, #write img,
+    .code-tooltip.md-hover-tip {
+        animation: none !important; transition: none !important;
+    }
+}
+
+.menu-item-container a.menu-style-btn {
+    background-color: var(--panel-bg);
+    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0));
+}
+#md-notification .btn { border: 0; }
+.ty-preferences .window-content { background-color: var(--window-bg-color); }
+.ty-preferences .nav-group-item.active {
+    color: #fff; background: var(--accent-color);
+}
+
+/* Windows chrome */
+.os-windows #megamenu-menu-sidebar,
+.os-windows .megamenu-menu,
+.os-windows .megamenu-menu-header,
+.os-windows #megamenu-menu-list,
+.os-windows .megamenu-content {
+    font-family: var(--font-ui) !important;
+    background-color: var(--window-bg-color);
+    color: var(--text-color);
+}
+.os-windows header,
+.os-windows.megamenu-opened header,
+.os-windows #top-titlebar,
+.os-windows footer,
+.os-windows footer.ty-footer,
+.os-windows .ty-footer {
+    background-color: var(--bg-color) !important;
+    color: var(--text-color);
+}
+.os-windows #top-titlebar > *,
+.os-windows #top-titlebar .titlebar-button,
+.os-windows #top-titlebar .window-control { background-color: transparent; }
+
+.os-windows header > *:not(#top-titlebar):not(.titlebar-button):not(.window-control),
+.os-windows header > *:not(#top-titlebar):not(.titlebar-button):not(.window-control) *:not(.fa),
+.os-windows footer, .os-windows .ty-footer { font-family: var(--font-ui) !important; }
+
+.os-windows footer .ty-icon, .os-windows footer .ty-icon:before,
+.os-windows .ty-footer .ty-icon, .os-windows .ty-footer .ty-icon:before,
+.os-windows #ty-sidebar-footer .ty-icon, .os-windows #ty-sidebar-footer .ty-icon:before,
+.os-windows #ty-sidebar-footer .ty-add:before,
+.os-windows #ty-sidebar-footer .ty-three-cells:before,
+.os-windows #ty-sidebar-footer .ty-file-tree:before,
+.os-windows #typora-sidebar .sidebar-footer .ty-icon,
+.os-windows #typora-sidebar .sidebar-footer .ty-icon:before {
+    font-family: "typora-icon" !important;
+    font-style: normal; font-weight: normal; font-variant: normal;
+    text-transform: none; line-height: 1;
+}
+
+.os-windows #megamenu-menu-sidebar,
+.os-windows #megamenu-menu-sidebar *:not(.fa),
+.os-windows .megamenu-menu-header,
+.os-windows .megamenu-menu-header *:not(.fa),
+.os-windows #megamenu-menu-list,
+.os-windows #megamenu-menu-list *:not(.fa),
+.os-windows .megamenu-menu-panel,
+.os-windows .megamenu-menu-panel *:not(.fa) {
+    font-family: var(--font-ui) !important;
+}
+
+.os-windows.megamenu-opened header,
+.os-windows #top-titlebar,
+.os-windows #megamenu-menu-sidebar,
+.os-windows .megamenu-menu,
+.os-windows .megamenu-menu-header,
+.os-windows #megamenu-menu-list,
+.os-windows.megamenu-opened content,
+.os-windows.megamenu-opened #megamenu-content,
+.os-windows.megamenu-opened .megamenu-content,
+.os-windows footer.ty-footer { background-image: none !important; }
+
+.os-windows.megamenu-opened content,
+.os-windows.megamenu-opened #megamenu-content,
+.os-windows.megamenu-opened .megamenu-content {
+    background-color: var(--bg-color) !important;
+    color: var(--text-color);
+}
+.os-windows.megamenu-opened #typora-sidebar { pointer-events: none !important; }
+.os-windows.megamenu-opened #typora-sidebar-resizer {
+    display: none !important; visibility: hidden !important; pointer-events: none !important;
+}
+.os-windows #megamenu-menu-sidebar, .os-windows .megamenu-menu {
+    box-shadow: none; border-right: 1px solid var(--border-color);
+}
+.os-windows .megamenu-menu-header { border-bottom: 1px solid var(--border-color); }
+.os-windows #megamenu-back-btn,
+.os-windows .megamenu-menu-header #megamenu-menu-header-title,
+.os-windows .megamenu-menu-header #megamenu-menu-header-title:before {
+    color: var(--text-color); border-color: var(--border-color);
+}
+.os-windows #megamenu-menu-list li, .os-windows #megamenu-menu-list li a,
+.os-windows .megamenu-menu-list li, .os-windows .megamenu-menu-list li a {
+    color: var(--text-color); opacity: 1;
+}
+.os-windows #megamenu-menu-list li a:hover, .os-windows #megamenu-menu-list li a.active,
+.os-windows .megamenu-menu-list li a:hover, .os-windows .megamenu-menu-list li a.active {
+    color: var(--heading-color); background-color: var(--item-hover-bg-color);
+}
+.os-windows #megamenu-menu-list li.disabled, .os-windows #megamenu-menu-list li.disabled a,
+.os-windows .megamenu-menu-list li.disabled, .os-windows .megamenu-menu-list li.disabled a {
+    color: var(--control-text-color); opacity: 0.68;
+}
+.os-windows .megamenu-menu-panel,
+.os-windows .megamenu-menu-panel table,
+.os-windows .megamenu-menu-panel tbody,
+.os-windows .megamenu-menu-panel tr,
+.os-windows .megamenu-menu-panel td { color: var(--text-color); }
+.os-windows .megamenu-menu-panel table tr,
+.os-windows .megamenu-menu-panel table tr:nth-child(2n),
+.os-windows .megamenu-menu-panel table td { background-color: transparent !important; }
+.os-windows .long-btn:hover,
+.os-windows .megamenu-menu-panel tbody tr:hover td {
+    background-color: var(--item-hover-bg-color);
+}
+.mac-os #write { caret-color: var(--accent-color); }
+
+/* ========== 39. Focus mode ========== */
+.on-focus-mode .md-end-block:not(.md-focus):not(.md-focus-container) {
+    opacity: 0.32;
+    transition: opacity 0.2s ease;
+}
+.on-focus-mode .md-end-block.md-focus,
+.on-focus-mode .md-focus-container {
+    opacity: 1;
+}
+
+/* ========== 40. Print / export ========== */
+@media print {
+    @page { margin: 1.6cm 1.4cm; }
+    html { font-size: 12.5px; background: #fff !important; }
+    body, #write, content {
+        background: #fff !important; color: #141413 !important;
+        max-width: 100% !important; padding: 0 !important; box-shadow: none !important;
+    }
+    a { color: #8a4a24 !important; text-decoration: underline; }
+    #write a::before, #write a::after,
+    #write h1::after, #write h2::after, #write h3::after,
+    #write h4::after, #write h5::after, #write h6::after,
+    #write blockquote::after, #write hr::before,
+    .md-fences::after, .md-fences[lang]::before,
+    .md-toc::after { content: none !important; display: none !important; }
+    h1, h2, h3, h4, h5, h6 {
+        background: none !important; box-shadow: none !important;
+        border-left: 0 !important;
+        page-break-after: avoid;
+    }
+    .md-fences {
+        padding-top: 0.8rem !important;
+        backdrop-filter: none !important;
+        background: #f7f5f0 !important;
+        box-shadow: none !important;
+    }
+    pre, .md-fences, table, blockquote, img, .md-alert, details, video {
+        page-break-inside: avoid;
+    }
+    #write .md-table-fig,
+    .md-table-fig,
+    .table-figure {
+        overflow: visible !important;
+        background: none !important;
+        border-radius: 0 !important;
+    }
+    table, #write table {
+        border: 1px solid #b0aea5 !important;
+        border-collapse: collapse !important;
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+    table th, table td, #write th, #write td {
+        border: 1px solid #c4c2ba !important;
+        background: #fff !important;
+        color: #141413 !important;
+        box-shadow: none !important;
+        position: static !important;
+        padding: 0.4rem 0.5rem !important;
+    }
+    table thead th, #write table thead th,
+    table tfoot th, table tfoot td {
+        background: #f0eee6 !important;
+        font-weight: 700 !important;
+    }
+    table tbody tr:nth-child(even) td {
+        background: #faf9f5 !important;
+    }
+    table tbody tr:hover td,
+    table tbody tr:hover th { background: inherit !important; }
+    #typora-sidebar { display: none !important; }
+}
+
+
+
+/* ========== 42. v6 tag seam patches (def-list / YAML / alert) ========== */
+#write dl,
+#write .md-def-list {
+    margin: 0.85em 0 1em;
+    padding: 0.15rem 0 0.15rem 0.85rem;
+    border-left: 2px solid var(--border-soft);
+}
+#write dt,
+#write .md-def-name {
+    font-family: var(--font-ui);
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--heading-color);
+    margin-top: 0.65em;
+}
+#write dd,
+#write .md-def-content {
+    margin: 0.2em 0 0.45em 1rem;
+    color: var(--control-text-color);
+    line-height: 1.6;
+}
+#write pre.md-meta-block,
+#write .md-meta-block {
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    line-height: 1.55;
+    color: var(--code-muted-color, var(--muted-text-color));
+    background: var(--meta-bg) !important;
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-md);
+    padding: 0.85rem 1rem;
+    margin: 0 0 1.4rem;
+}
+#typora-source .cm-meta,
+#typora-source .cm-atom {
+    color: var(--accent-gold, var(--accent-color));
+}
+
+/* ============================================================
+   41. PERFORMANCE LAYER  (v5)
+   - contain paint isolation for heavy blocks
+   - no blur / reduced shadows already applied above
+   - cheaper transitions; reduced-motion respected
+   ============================================================ */
+/* NOTE: never apply layout/size containment to .md-fences —
+   CodeMirror gutters/line numbers require free absolute layout */
+#write pre:not(.md-fences),
+.md-table-fig,
+.table-figure,
+#write table,
+#write .md-alert,
+#write details,
+.md-toc,
+#write pre.md-meta-block,
+.md-math-block,
+.mathjax-block,
+.md-fences.md-fences-advanced .md-diagram-panel { contain: none; }
+
+#typora-sidebar {
+    contain: none;
+    will-change: auto;
+}
+
+#write img {
+    /* content-visibility removed */
+}
+
+/* Prefer discrete hover over continuous animation cost */
+.dropdown-menu {
+    animation-duration: 90ms !important;
+}
+
+/*
+ * CRITICAL (CDP 实测 2026-07-14)：
+ * 系统开启 prefers-reduced-motion: reduce 时，
+ *   *, *::before, *::after { animation/transition: ... }
+ * 会作用到 Mermaid 内部 SVG/foreignObject，导致 viewBox 被算成 ~2000×2000，
+ * 节点挤在左上角（GitHub 主题无此规则 → 正常 120×280）。
+ * 禁止再用通用 * 选择器；只收白名单 UI 元素。
+ */
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+    .dropdown-menu,
+    .file-list-item,
+    .outline-item,
+    #write a,
+    #write img,
+    .code-tooltip,
+    .btn,
+    .menu-item-container,
+    #megamenu-menu-sidebar,
+    .sidebar-content {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+
+/* ============================================================
+   STABILITY PATCH · quiet + layout safety
+   ============================================================ */
+#typora-sidebar {
+    margin: 0 !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    border-radius: 0 !important;
+}
+
+#write::after {
+    content: none !important;
+    display: none !important;
+}
+
+/* Never inject decorative syntax / glyphs */
+#write a::before,
+#write a::after,
+#write strong::before,
+#write em::before,
+#write del::before,
+#write mark::before,
+#write code::before,
+#write kbd::before,
+#write h1::after, #write h2::after, #write h3::after,
+#write h4::after, #write h5::after, #write h6::after,
+#write table::before,
+#write img::after,
+#write li.md-task-list-item::after,
+#write .md-alert::before,
+#write pre.md-meta-block::after,
+#write .md-math-block::before,
+#write .mathjax-block::before,
+#write dl::before,
+#write > ul::before,
+#write > ol::before,
+#write hr::after,
+#write .md-toc::after,
+#write li > ul::before,
+#write li > ol::before {
+    content: none !important;
+    display: none !important;
+}
+
+body {
+    overflow-wrap: break-word;
+    word-break: normal;
+}
+
+#write .md-table-fig,
+#write .table-figure {
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+/* ========== 43. v7 Full MD composition & edge styles ========== */
+/*
+ * Deep composition: how styles nest and interact.
+ * Goal: every common Typora/GFM structure looks intentional on Claude paper.
+ */
+
+/* ----- Paragraph rhythm variants ----- */
+#write > p + p { margin-top: var(--paragraph-gap, 0.75em); }
+#write > p.md-end-block:last-child { margin-bottom: 0; }
+/* lead / first paragraph after h1 */
+#write h1 + p {
+    font-size: 1.05em;
+    color: var(--control-text-color);
+    line-height: 1.75;
+}
+
+/* ----- Links: more states ----- */
+#write a.md-plain-url,
+#write span.md-plain-url,
+#write a.auto-link {
+    font-family: var(--font-mono);
+    font-size: 0.92em;
+    word-break: break-all;
+}
+#write a:visited { color: var(--accent-deep); }
+#write a.md-link .md-plain { /* ref-style visible meta */ }
+#write .md-link-url,
+#write .md-link-title {
+    font-family: var(--font-mono);
+    font-size: 0.82em;
+    color: var(--muted-text-color);
+}
+
+/* ----- Emphasis composition ----- */
+#write strong em,
+#write em strong,
+#write strong > em,
+#write em > strong {
+    color: var(--strong-color);
+    font-weight: 700;
+    font-style: italic;
+}
+#write del strong,
+#write del code {
+    opacity: 0.85;
+}
+#write mark code {
+    background: transparent;
+    border-color: transparent;
+}
+
+/* ----- Blockquote + nested content ----- */
+#write blockquote ul,
+#write blockquote ol {
+    margin: 0.4em 0;
+    padding-left: 1.4em;
+}
+#write blockquote li { line-height: 1.6; }
+#write blockquote .md-fences:not(.md-fences-advanced),#write blockquote pre.md-fences:not(.md-fences-advanced) {
+    margin: 0.65em 0;
+    font-size: 0.88em;
+}
+#write blockquote table {
+    font-size: 0.9em;
+    margin: 0.65em 0;
+}
+#write blockquote > :first-child { margin-top: 0.15em; }
+#write blockquote > :last-child { margin-bottom: 0.15em; }
+/* list item containing blockquote */
+#write li > blockquote {
+    margin: 0.45em 0;
+    padding-left: 0.85rem;
+}
+
+/* ----- Lists: tight vs loose, ol markers, nested depth colors ----- */
+#write ol { list-style-type: decimal; }
+#write ol ol { list-style-type: lower-alpha; }
+#write ol ol ol { list-style-type: lower-roman; }
+#write ul ul { list-style-type: circle; }
+#write ul ul ul { list-style-type: square; }
+
+#write li.md-list-item.md-focus { outline: none; }
+/* loose list: space between items with multi-p */
+#write li > p + p {
+    margin-top: 0.45em;
+    color: var(--control-text-color);
+}
+#write li > .md-fences:not(.md-fences-advanced) {
+    margin: 0.5em 0;
+}
+#write li > table {
+    margin: 0.5em 0;
+    font-size: 0.92em;
+}
+
+/* ----- Task list polish ----- */
+#write li.md-task-list-item.task-list-done > p,
+#write li.md-task-list-item.task-list-done {
+    color: var(--muted-text-color);
+}
+#write li.md-task-list-item.task-list-done > p {
+    text-decoration: line-through;
+    text-decoration-color: var(--border-strong);
+}
+#write li.md-task-list-item ul.contains-task-list,
+#write li.md-task-list-item ul.task-list {
+    margin-top: 0.35em;
+}
+/* task in blockquote */
+#write blockquote ul.contains-task-list {
+    padding-left: 0.15em;
+}
+
+/* ----- HR variants ----- */
+#write hr {
+    height: 0;
+    border: 0;
+    border-top: 1px solid var(--border-color);
+    margin: 1.75em auto;
+    max-width: 100%;
+    background: none;
+    position: relative;
+}
+/* slightly stronger break after major sections */
+#write h1 + hr,
+#write h2 + hr { opacity: 0.9; }
+
+/* ----- Images: title, link-wrapped, inline ----- */
+#write p > img,
+#write p > .md-image {
+    display: inline-block;
+    vertical-align: middle;
+}
+#write p > .md-image:only-child,
+#write p > img:only-child {
+    display: block;
+    margin: 0.35em auto;
+}
+#write a.md-image-link img,
+#write span.md-image > img {
+    cursor: zoom-in;
+}
+#write .md-image.md-img-loaded img {
+    background: var(--media-bg);
+}
+/* image meta (size/path when editing) */
+#write .md-image > .md-meta {
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ----- Video / audio / iframe card ----- */
+#write video,
+#write audio,
+#write iframe {
+    display: block;
+    max-width: 100%;
+    margin: 1em auto;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-soft);
+    background: var(--media-bg);
+    box-shadow: var(--shadow-card);
+}
+#write audio { width: 100%; padding: 0.5rem; }
+#write iframe {
+    min-height: 16rem;
+    width: 100%;
+}
+
+/* Details chrome: only §24 (duplicates removed — they broke nested code) */
+
+/* ----- Math block as soft panel ----- */
+#write .md-math-block,
+#write .mathjax-block {
+    margin: 1.15em 0;
+    padding: 0.85rem 1rem;
+    background: var(--elevated-bg);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-card);
+    text-align: center;
+    overflow-x: auto;
+}
+#write .md-inline-math {
+    padding: 0 0.1em;
+}
+
+/* ----- TOC deeper levels + active feel ----- */
+#write .md-toc {
+    margin: 1.5em 0 1.75em;
+}
+.md-toc .md-toc-content {
+    max-height: none;
+}
+.md-toc a:focus {
+    color: var(--accent-color);
+    outline: none;
+}
+.md-toc-h1 a { font-weight: 600; }
+.md-toc-h2 a { font-weight: 500; }
+
+/* ----- Footnotes area polish ----- */
+#write .footnotes,
+#write .footnotes-area {
+    font-size: 0.88em;
+    margin-top: 2.5rem;
+    padding: 1rem 1.1rem 0.5rem;
+    background: var(--panel-bg);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-md);
+    border-top: 2px solid var(--border-color);
+}
+#write .footnotes::before,
+#write .footnotes-area::before {
+    content: "FOOTNOTES";
+    display: block;
+    font-family: var(--font-ui);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--muted-text-color);
+    margin-bottom: 0.45rem;
+}
+#write .footnotes p { margin: 0.25em 0; }
+
+/* ----- Alerts: nested list/code/table/blockquote ----- */
+#write .md-alert > :first-child { margin-top: 0.1em; }
+#write .md-alert > :last-child { margin-bottom: 0.1em; }
+#write .md-alert ul,
+#write .md-alert ol {
+    margin: 0.4em 0;
+    padding-left: 1.35em;
+}
+#write .md-alert .md-fences:not(.md-fences-advanced) {
+    margin: 0.55em 0;
+    font-size: 0.88em;
+}
+#write .md-alert blockquote {
+    margin: 0.5em 0;
+    background: transparent;
+}
+#write .md-alert p { margin: 0.35em 0; line-height: 1.6; }
+
+/* ----- Code fence language bar feel (tooltip only, no CM geometry) ----- */
+#write .md-fences:not(.md-fences-advanced) {
+    position: relative;
+}
+/* keep CM safe: do not add left padding decorations */
+
+/* ----- Ruby ----- */
+#write ruby {
+    ruby-align: center;
+}
+#write ruby rt {
+    font-family: var(--font-ui);
+    font-size: 0.65em;
+    color: var(--muted-text-color);
+}
+
+/* ----- Small / time / dfn ----- */
+#write small {
+    font-size: 0.85em;
+    color: var(--control-text-color);
+}
+#write time {
+    font-variant-numeric: tabular-nums;
+    color: var(--control-text-color);
+}
+#write dfn {
+    font-style: italic;
+    color: var(--heading-color);
+    border-bottom: 1px dotted var(--border-color);
+}
+
+/* ----- HTML block wrappers ----- */
+#write .md-htmlblock,
+#write .md-rawblock {
+    margin: 0.85em 0;
+}
+#write .md-htmlblock-container {
+    border-radius: var(--radius-md);
+    overflow: auto;
+}
+
+/* ----- Selection inside special blocks ----- */
+#write .md-fences ::selection,
+#write table ::selection,
+#write .md-alert ::selection {
+    background-color: var(--select-text-bg-color);
+}
+
+/* ----- Empty / placeholder editing states ----- */
+#write [contenteditable]:empty:not(.md-fences):not(table):before {
+    color: var(--faint-text-color);
+}
+
+/* ----- Horizontal rule + following heading ----- */
+#write hr + h1,
+#write hr + h2,
+#write hr + h3 {
+    margin-top: 1.25rem;
+}
+
+/* nested details → §24 */
+
+/* ----- Export: keep composition readable ----- */
+@media print {
+    #write .md-math-block,
+    #write details,
+    #write .md-toc,
+    #write .footnotes-area {
+        box-shadow: none !important;
+        background: #faf9f5 !important;
+        border: 1px solid #d4d2ca !important;
+    }
+}
+
+/* ============================================================
+   §50  v12 HARD MARKDOWN LAB
+   Research-driven polish for Typora 1.13 difficult formats.
+   Sources: Typora Markdown Reference + stock base.css behaviour.
+   Principle: enhance chrome only; never fight CM/MathJax/Mermaid geometry.
+   ============================================================ */
+
+/* ----- 50.1 YAML front matter ----- */
+#write pre.md-meta-block,
+pre.md-meta-block {
+    font-family: var(--font-mono) !important;
+    font-size: 0.82rem !important;
+    line-height: 1.55 !important;
+    color: var(--control-text-color) !important;
+    background:
+        linear-gradient(90deg, var(--accent-softer, rgba(217,119,87,.12)), transparent 42%),
+        var(--meta-bg, #f0eee6) !important;
+    border: 1px solid var(--border-soft, rgba(0,0,0,.08)) !important;
+    border-left: 3px solid var(--accent-color) !important;
+    border-radius: var(--radius-md, 10px) !important;
+    padding: 0.85rem 1rem !important;
+    margin: 0 0 1.5rem !important;
+    white-space: pre-wrap !important;
+    overflow-x: auto !important;
+}
+
+/* ----- 50.2 TOC [toc] ----- */
+#write .md-toc,
+.md-toc {
+    margin: 1.35em 0 1.6em !important;
+    padding: 0.95rem 1.1rem 1rem !important;
+    background: var(--panel-bg, var(--meta-bg, #f8f6ef)) !important;
+    border: 1px solid var(--border-soft, rgba(0,0,0,.08)) !important;
+    border-radius: var(--radius-lg, 14px) !important;
+    border-top: 2.5px solid var(--accent-color) !important;
+    font-family: var(--font-ui) !important;
+    font-size: 0.9rem !important;
+    max-height: none !important;
+}
+#write .md-toc::before {
+    content: "CONTENTS";
+    display: block;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--muted-text-color);
+    margin-bottom: 0.55rem;
+}
+#write .md-toc-item { line-height: 1.55; margin: 0.12em 0; }
+#write .md-toc-inner {
+    color: var(--text-color) !important;
+    text-decoration: none !important;
+    border-bottom: 1px solid transparent;
+}
+#write .md-toc-inner:hover {
+    color: var(--accent-color) !important;
+    border-bottom-color: var(--accent-color);
+}
+#write .md-toc-h1 .md-toc-inner { font-weight: 650; }
+#write .md-toc-h2 .md-toc-inner { font-weight: 500; opacity: 0.95; }
+#write .md-toc-h3 .md-toc-inner,
+#write .md-toc-h4 .md-toc-inner,
+#write .md-toc-h5 .md-toc-inner,
+#write .md-toc-h6 .md-toc-inner { opacity: 0.88; font-size: 0.96em; }
+
+/* ----- 50.3 GFM Alerts / Callouts (all 5) ----- */
+#write .md-alert {
+    margin: 1.05em 0 !important;
+    padding: 0.75rem 1rem 0.85rem 1.05rem !important;
+    border-radius: 0 var(--radius-md, 10px) var(--radius-md, 10px) 0 !important;
+    border: 1px solid var(--border-soft) !important;
+    border-left-width: 0.28em !important;
+    background: var(--alert-bg-default, rgba(255,255,255,.45)) !important;
+}
+#write .md-alert-note {
+    border-left-color: #5b8fc7 !important;
+    background: var(--alert-note-bg, rgba(106,155,204,.1)) !important;
+}
+#write .md-alert-tip {
+    border-left-color: #6b8f5e !important;
+    background: var(--alert-tip-bg, rgba(120,140,93,.11)) !important;
+}
+#write .md-alert-important {
+    border-left-color: #8b6f9d !important;
+    background: var(--alert-important-bg, rgba(139,111,157,.11)) !important;
+}
+#write .md-alert-warning {
+    border-left-color: #ad7837 !important;
+    background: var(--alert-warning-bg, rgba(173,120,55,.12)) !important;
+}
+#write .md-alert-caution {
+    border-left-color: #b45f51 !important;
+    background: var(--alert-caution-bg, rgba(180,95,81,.11)) !important;
+}
+#write .md-alert-text-container {
+    font-family: var(--font-ui);
+    font-weight: 700;
+    font-size: 0.88rem;
+    letter-spacing: 0.02em;
+    margin-bottom: 0.25rem;
+}
+#write .md-alert-text-note { color: #3d6f9e; }
+#write .md-alert-text-tip { color: #4a6b42; }
+#write .md-alert-text-important { color: #6b4f7a; }
+#write .md-alert-text-warning { color: #8a5a20; }
+#write .md-alert-text-caution { color: #8f4035; }
+/* Nested content inside alerts */
+#write .md-alert ul, #write .md-alert ol { margin: 0.4em 0; padding-left: 1.4em; }
+#write .md-alert .md-fences:not(.md-fences-advanced) { margin: 0.55em 0; font-size: 0.9em; }
+#write .md-alert table { font-size: 0.92em; margin: 0.5em 0; }
+#write .md-alert .md-inline-math { font-size: 1.02em; }
+#write .md-alert > :first-child { margin-top: 0.05em; }
+#write .md-alert > :last-child { margin-bottom: 0.05em; }
+
+/* ----- 50.4 Tables: hard cells (math/code/align/wide) ----- */
+#write table.md-table {
+    border-collapse: collapse;
+    width: auto;
+    max-width: 100%;
+    font-variant-numeric: tabular-nums;
+}
+#write table.md-table th,
+#write table.md-table td {
+    border: 1px solid var(--table-grid-color, var(--border-soft, rgba(0,0,0,.1)));
+    padding: 0.42rem 0.65rem;
+    vertical-align: top;
+    line-height: 1.45;
+}
+#write table.md-table th {
+    background: var(--table-header-bg, var(--meta-bg));
+    font-family: var(--font-ui);
+    font-weight: 600;
+    font-size: 0.86rem;
+}
+#write table.md-table td { font-size: 0.9rem; }
+#write table.md-table tr:nth-child(even) td {
+    background: var(--table-zebra, rgba(61,61,58,.03));
+}
+#write table.md-table tr:hover td {
+    background: var(--table-hover-color, var(--accent-softer, rgba(217,119,87,.08)));
+}
+/* inline hard spans in cells */
+#write table.md-table code {
+    font-size: 0.84em;
+    padding: 0.08em 0.28em;
+}
+#write table.md-table .md-inline-math,
+#write table.md-table mjx-container {
+    font-size: 0.98em !important;
+}
+#write table.md-table a { word-break: break-all; }
+#write table.md-table img {
+    max-width: 100%;
+    max-height: 8rem;
+    vertical-align: middle;
+}
+/* alignment helpers Typora sets */
+#write table.md-table th[align="center"],
+#write table.md-table td[align="center"],
+#write table.md-table th[style*="text-align: center"],
+#write table.md-table td[style*="text-align: center"] { text-align: center; }
+#write table.md-table th[align="right"],
+#write table.md-table td[align="right"],
+#write table.md-table th[style*="text-align: right"],
+#write table.md-table td[style*="text-align: right"] { text-align: right; }
+/* wide table figure scroll */
+#write .md-table-fig {
+    margin: 1.1em 0;
+    overflow-x: auto;
+    max-width: 100%;
+    border-radius: var(--radius-md, 10px);
+    -webkit-overflow-scrolling: touch;
+}
+
+/* ----- 50.5 Task lists (nested + mixed) ----- */
+#write li.md-task-list-item {
+    padding-left: 1.65em !important;
+    min-height: 1.55em;
+}
+#write li.md-task-list-item > p { margin: 0.15em 0; }
+#write li.md-task-list-item.task-list-done > p,
+#write li.md-task-list-item.task-list-done {
+    color: var(--muted-text-color);
+}
+#write li.md-task-list-item > input[type="checkbox"] {
+    width: 1em;
+    height: 1em;
+    top: 0.28em;
+    left: 0.1em;
+    cursor: pointer;
+}
+/* task containing nested list/code */
+#write li.md-task-list-item > ul,
+#write li.md-task-list-item > ol {
+    margin: 0.35em 0 0.45em;
+}
+#write li.md-task-list-item .md-fences:not(.md-fences-advanced) {
+    margin: 0.45em 0;
+    font-size: 0.9em;
+}
+
+/* ----- 50.6 Footnotes ----- */
+#write sup.md-footnote {
+    font-family: var(--font-ui) !important;
+    font-size: 0.72em !important;
+    font-weight: 600 !important;
+    color: var(--accent-deep, var(--accent-color)) !important;
+    background: var(--accent-softer, rgba(217,119,87,.12)) !important;
+    border-radius: 4px !important;
+    padding: 0 0.32em !important;
+    margin: 0 0.08em !important;
+    vertical-align: super !important;
+}
+#write sup.md-footnote a { color: inherit !important; text-decoration: none !important; }
+#write .footnotes-area,
+#write .footnotes {
+    margin-top: 2.25rem !important;
+    padding: 0.95rem 1.05rem 0.65rem !important;
+    background: var(--panel-bg, var(--meta-bg)) !important;
+    border: 1px solid var(--border-soft) !important;
+    border-top: 2.5px solid var(--accent-color) !important;
+    border-radius: var(--radius-md, 10px) !important;
+    font-size: 0.88em !important;
+    color: var(--control-text-color) !important;
+}
+#write .footnotes-area::before,
+#write .footnotes::before {
+    content: "FOOTNOTES";
+    display: block;
+    font-family: var(--font-ui);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    color: var(--muted-text-color);
+    margin-bottom: 0.5rem;
+}
+#write .footnote-line { margin: 0.4em 0; line-height: 1.55; }
+#write .footnote-line .reversefootnote {
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    color: var(--accent-color);
+    text-decoration: none;
+    margin-left: 0.25em;
+}
+#write .footnote-line .reversefootnote:hover { text-decoration: underline; }
+
+/* ----- 50.7 Definition lists ----- */
+#write dl { margin: 1em 0; }
+#write dt {
+    font-family: var(--font-ui);
+    font-weight: 700;
+    color: var(--accent-deep, var(--accent-color));
+    margin-top: 0.75rem;
+    font-size: 0.95em;
+}
+#write dd {
+    margin: 0.25rem 0 0.55rem 0.15rem;
+    padding: 0.2rem 0 0.2rem 0.85rem;
+    border-left: 2px solid var(--border-color, rgba(0,0,0,.12));
+    color: var(--control-text-color);
+    line-height: 1.65;
+}
+#write dd > p { margin: 0.2em 0; }
+#write dd code { font-size: 0.88em; }
+
+/* ----- 50.8 Math hard contexts ----- */
+#write .md-inline-math {
+    font-size: var(--math-inline-scale, 1.06em);
+}
+#write li .md-inline-math,
+#write blockquote .md-inline-math,
+#write td .md-inline-math,
+#write th .md-inline-math,
+#write .md-alert .md-inline-math,
+#write .footnote-line .md-inline-math {
+    font-size: 1.02em;
+}
+#write .md-math-block,
+#write .mathjax-block {
+    margin: 1.05em 0;
+    padding: 0.85rem 1rem;
+    background: var(--math-block-bg, var(--elevated-bg, #fffcf7));
+    border: 1px solid var(--math-block-border, var(--border-soft));
+    border-radius: var(--radius-md, 10px);
+    overflow-x: auto;
+    text-align: center;
+}
+#write .md-math-block mjx-container[display="true"],
+#write .mathjax-block mjx-container[display="true"] {
+    font-size: var(--math-display-scale, 1.18em) !important;
+    margin: 0.2em auto !important;
+}
+/* math inside list: tighter */
+#write li > .md-math-block,
+#write li > .mathjax-block {
+    margin: 0.55em 0;
+    padding: 0.65rem 0.8rem;
+}
+
+/* ----- 50.9 Images / figures / captions ----- */
+#write p > .md-image:only-child,
+#write p > img:only-child {
+    display: block;
+    margin: 0.85em auto;
+}
+#write img {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--radius-sm, 6px);
+}
+#write .md-image.md-img-error {
+    border: 1px dashed var(--accent-color);
+    padding: 0.5rem;
+    color: var(--muted-text-color);
+    font-family: var(--font-ui);
+    font-size: 0.88rem;
+}
+#write .md-image-caption,
+#write p.md-image-caption,
+#write figcaption {
+    text-align: center;
+    font-family: var(--font-ui);
+    font-size: 0.84rem;
+    color: var(--muted-text-color);
+    margin-top: 0.35em;
+}
+
+/* ----- 50.10 Blockquote nesting 1–4 ----- */
+#write blockquote {
+    margin: 1em 0;
+    padding: 0.15rem 0 0.15rem 1rem;
+    border-left: 3px solid var(--accent-color);
+    color: var(--quote-text-color, var(--control-text-color));
+    background: linear-gradient(90deg, var(--accent-softer, rgba(217,119,87,.08)), transparent 70%);
+}
+#write blockquote blockquote {
+    border-left-color: var(--accent-deep, #b55320);
+    background: transparent;
+    margin: 0.55em 0;
+}
+#write blockquote blockquote blockquote {
+    border-left-color: var(--border-strong, rgba(0,0,0,.2));
+    opacity: 0.95;
+}
+#write blockquote > :first-child { margin-top: 0.15em; }
+#write blockquote > :last-child { margin-bottom: 0.15em; }
+#write blockquote .md-fences:not(.md-fences-advanced) { font-size: 0.9em; margin: 0.5em 0; }
+#write blockquote table { font-size: 0.92em; }
+
+/* ----- 50.11 Details → see §24 only ----- */
+
+/* ----- 50.12 HTML inline hard spans ----- */
+#write kbd {
+    font-family: var(--font-ui);
+    font-size: 0.8em;
+    padding: 0.12em 0.45em;
+    border-radius: 5px;
+    border: 1px solid var(--kbd-border, #d4d2ca);
+    border-bottom-width: 2px;
+    background: var(--kbd-bg, #f0eee6);
+    color: var(--kbd-color, #3d3d3a);
+    box-shadow: 0 1px 0 var(--kbd-shadow, #c4c2ba);
+}
+#write mark {
+    background: linear-gradient(180deg, transparent 52%, var(--mark-wash, rgba(217,119,87,.3)) 52%);
+    color: inherit;
+    padding: 0 0.12em;
+    border-radius: 2px;
+}
+#write abbr[title] {
+    text-decoration: underline dotted var(--accent-color);
+    text-underline-offset: 3px;
+    cursor: help;
+}
+#write ruby rt {
+    font-family: var(--font-ui);
+    font-size: 0.62em;
+    color: var(--muted-text-color);
+}
+#write video,
+#write audio,
+#write iframe {
+    max-width: 100%;
+    display: block;
+    margin: 0.85em auto;
+    border-radius: var(--radius-md, 10px);
+}
+#write iframe {
+    min-height: 16rem;
+    border: 1px solid var(--border-soft);
+}
+
+/* ----- 50.13 NORMAL code only (never touch advanced/diagram) ----- */
+#write .md-fences:not(.md-fences-advanced) .CodeMirror-scroll {
+    overflow: auto !important;
+}
+#write .md-fences:not(.md-fences-advanced) .code-tooltip .ty-input {
+    color: var(--pre-lang-color, var(--muted-text-color)) !important;
+    font-weight: 600 !important;
+}
+
+/* ----- 50.14 Diagrams: do not re-override mermaid (see §26 v15) ----- */
+
+/* ----- 50.15 Lists: deep mix with blocks ----- */
+#write li > .md-fences:not(.md-fences-advanced) { margin: 0.45em 0; }
+#write li > .md-math-block { margin: 0.5em 0; }
+#write li > blockquote { margin: 0.45em 0; }
+#write li > .md-table-fig { margin: 0.5em 0; }
+#write li > p { margin: 0.2em 0; }
+/* tight vs loose */
+#write li.md-list-item > p:only-child { margin: 0.1em 0; }
+
+/* ----- 50.16 Horizontal rule ----- */
+#write hr {
+    height: 0;
+    border: 0;
+    margin: 2rem 0;
+    background: linear-gradient(90deg, transparent, var(--border-color) 15%, var(--border-color) 85%, transparent);
+    background-size: 100% 1px;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+/* ----- 50.17 Focus / source / print hard formats ----- */
+#write .md-focus {
+    /* keep outline subtle for nested structures */
+}
+@media print {
+    #write .md-toc::before,
+    #write .footnotes-area::before,
+    #write .footnotes::before,
+    #write .md-fences.md-fences-advanced[lang]::before {
+        display: none !important;
+    }
+    #write .md-alert,
+    #write details,
+    #write .md-math-block,
+    #write .md-table-fig,
+    #write .md-fences.md-fences-advanced {
+        break-inside: avoid;
+        page-break-inside: avoid;
+        box-shadow: none !important;
+    }
+    /* mermaid print: stock */
+}
+
+/* ----- 50.18 Emoji / special unicode in mono contexts ----- */
+#write .md-emoji {
+    font-family: "Segoe UI Emoji", "Segoe UI Symbol", "Apple Color Emoji", sans-serif;
+}
+#write .md-fences .md-emoji { font-family: inherit; }
+
+/* end §50 v12 */
+/* ============================================================
+   §60  v17 NESTED ELEGANCE — 全标签 × 深层嵌套统一韵律
+   目标：任意组合嵌套仍优雅、可读、可点选，不打架。
+   原则：只调 chrome/间距/层级；不碰 CM 几何 / MathJax 布局 /
+         Mermaid 节点字号（见 §26 v16）。
+   ============================================================ */
+
+:root {
+    /* 嵌套韵律刻度 */
+    --nest-gap-xs: 0.28em;
+    --nest-gap-sm: 0.4em;
+    --nest-gap-md: 0.55em;
+    --nest-gap-lg: 0.75em;
+    --nest-indent: 1.2em;
+    --nest-rail: 1px solid var(--border-soft);
+    --nest-rail-accent: 2px solid var(--accent-color);
+    --nest-soft-bg: var(--meta-bg, #f0eee6);
+    --nest-code-scale: 0.9em;
+    --nest-table-scale: 0.9em;
+    --nest-math-scale: 0.98em;
+}
+
+/* ----- 60.1 深层引用 1–6：渐弱左边 + 渐浅底，不糊成一团 ----- */
+#write blockquote {
+    border-left-width: 3px;
+    border-left-style: solid;
+    border-left-color: var(--quote-border-color, var(--border-color));
+    background: linear-gradient(90deg, var(--accent-softer), transparent 68%);
+    padding: 0.35rem 0.15rem 0.35rem 0.95rem;
+    margin: var(--nest-gap-lg) 0;
+    color: var(--quote-text-color, var(--control-text-color));
+}
+#write blockquote blockquote {
+    margin: var(--nest-gap-sm) 0;
+    padding-left: 0.85rem;
+    border-left-color: var(--accent-color);
+    background: linear-gradient(90deg, var(--accent-softer), transparent 55%);
+    opacity: 1;
+}
+#write blockquote blockquote blockquote {
+    border-left-color: var(--border-strong);
+    background: linear-gradient(90deg, var(--border-soft), transparent 50%);
+}
+#write blockquote blockquote blockquote blockquote {
+    border-left-width: 2px;
+    border-left-color: var(--muted-text-color);
+    background: transparent;
+    opacity: 0.97;
+}
+#write blockquote blockquote blockquote blockquote blockquote {
+    border-left-width: 2px;
+    border-left-style: dashed;
+    border-left-color: var(--border-color);
+    opacity: 0.95;
+}
+#write blockquote blockquote blockquote blockquote blockquote blockquote {
+    border-left-style: dotted;
+    opacity: 0.93;
+}
+#write blockquote > :first-child { margin-top: 0.1em !important; }
+#write blockquote > :last-child { margin-bottom: 0.1em !important; }
+
+/* 引用内：列表 / 任务 / 表 / 码 / 公式 / Alert / details */
+#write blockquote ul,
+#write blockquote ol {
+    margin: var(--nest-gap-sm) 0;
+    padding-left: 1.35em;
+}
+#write blockquote li { margin: 0.12em 0; line-height: 1.6; }
+#write blockquote .md-fences:not(.md-fences-advanced),
+#write blockquote pre.md-fences:not(.md-fences-advanced) {
+    margin: var(--nest-gap-md) 0 !important;
+    font-size: var(--nest-code-scale) !important;
+}
+#write blockquote table,
+#write blockquote .md-table-fig {
+    margin: var(--nest-gap-md) 0;
+    font-size: var(--nest-table-scale);
+    width: auto;
+    max-width: 100%;
+}
+#write blockquote .md-math-block,
+#write blockquote .mathjax-block {
+    margin: var(--nest-gap-md) 0;
+    padding: 0.55rem 0.75rem;
+    font-size: 0.95em;
+}
+#write blockquote .md-inline-math { font-size: var(--nest-math-scale); }
+#write blockquote .md-alert {
+    margin: var(--nest-gap-md) 0 !important;
+    box-shadow: none !important;
+}
+#write blockquote details {
+    margin: var(--nest-gap-md) 0;
+    background: var(--elevated-bg, #fffcf7);
+}
+#write blockquote hr {
+    margin: 0.85em 0;
+    opacity: 0.7;
+}
+
+/* ----- 60.2 列表 6 层：缩进轨 + marker 循环，混排不塌 ----- */
+#write ul,
+#write ol {
+    margin: var(--nest-gap-md) 0;
+    padding-left: 1.55em;
+}
+#write li > ul,
+#write li > ol {
+    margin: var(--nest-gap-xs) 0 var(--nest-gap-sm);
+    padding-left: var(--nest-indent);
+    border-left: var(--nest-rail);
+}
+/* 深层列表：几乎不缩字号（CDP：6–7 层曾叠到 ~14px，略影响可读） */
+#write li li li li { font-size: 0.995em; }
+#write li li li li li { font-size: 0.995em; }
+#write li li li li li li { font-size: 0.99em; }
+
+/* 列表项内块：码 / 表 / 引用 / 公式 / details / alert */
+#write li > .md-fences:not(.md-fences-advanced),
+#write li > pre.md-fences:not(.md-fences-advanced) {
+    margin: var(--nest-gap-sm) 0 !important;
+    font-size: var(--nest-code-scale) !important;
+    max-width: 100%;
+}
+#write li > table,
+#write li > .md-table-fig {
+    margin: var(--nest-gap-sm) 0;
+    font-size: var(--nest-table-scale);
+    width: auto;
+    max-width: 100%;
+}
+#write li > blockquote {
+    margin: var(--nest-gap-sm) 0;
+    padding-left: 0.75rem;
+}
+#write li > .md-math-block,
+#write li > .mathjax-block {
+    margin: var(--nest-gap-sm) 0;
+    padding: 0.5rem 0.7rem;
+}
+#write li > .md-alert {
+    margin: var(--nest-gap-sm) 0 !important;
+    box-shadow: none !important;
+}
+#write li > details {
+    margin: var(--nest-gap-sm) 0;
+}
+/* 松散列表多段 */
+#write li > p + p {
+    margin-top: 0.4em;
+    color: var(--control-text-color);
+}
+/* 混排 ol⊃ul / ul⊃ol */
+#write ol > li > ul,
+#write ul > li > ol {
+    margin-top: var(--nest-gap-xs);
+}
+
+/* ----- 60.3 任务列表：嵌套 + 引用 + Alert 内 ----- */
+#write ul.contains-task-list,
+#write ul.task-list,
+#write .md-task-list {
+    list-style: none !important;
+    padding-left: 0.2em !important;
+    border-left: 0 !important;
+}
+#write li.md-task-list-item {
+    list-style: none !important;
+    padding-left: 1.7em !important;
+}
+#write li.md-task-list-item > ul,
+#write li.md-task-list-item > ol {
+    border-left: var(--nest-rail);
+    margin-left: 0.1em;
+    padding-left: 1.15em;
+}
+#write blockquote li.md-task-list-item,
+#write .md-alert li.md-task-list-item,
+#write details li.md-task-list-item {
+    padding-left: 1.65em !important;
+}
+#write li.md-task-list-item .md-inline-math { font-size: 1em; }
+#write li.md-task-list-item code { font-size: 0.88em; }
+
+/* ----- 60.4 Details：几何/交互一律以 §24 v18 为准，这里只调外间距 ----- */
+#write details {
+    margin-top: var(--nest-gap-lg);
+    margin-bottom: var(--nest-gap-lg);
+}
+#write details details {
+    margin-top: var(--nest-gap-md);
+    margin-bottom: var(--nest-gap-md);
+}
+#write details pre {
+    font-size: var(--nest-code-scale);
+}
+
+/* ----- 60.5 GFM Alert 五色 × 内嵌 ----- */
+#write .md-alert {
+    margin: var(--nest-gap-lg) 0 !important;
+    border-radius: 0 var(--radius-md) var(--radius-md) 0 !important;
+}
+#write .md-alert ul,
+#write .md-alert ol {
+    margin: var(--nest-gap-sm) 0;
+    padding-left: 1.3em;
+}
+#write .md-alert .md-fences:not(.md-fences-advanced) {
+    margin: var(--nest-gap-sm) 0 !important;
+    font-size: var(--nest-code-scale) !important;
+}
+#write .md-alert table,
+#write .md-alert .md-table-fig {
+    margin: var(--nest-gap-sm) 0;
+    font-size: var(--nest-table-scale);
+    width: auto;
+    max-width: 100%;
+}
+#write .md-alert blockquote {
+    margin: var(--nest-gap-sm) 0;
+    background: transparent;
+    border-left-color: var(--alert-accent, var(--accent-color));
+}
+#write .md-alert details {
+    margin: var(--nest-gap-sm) 0;
+    box-shadow: none;
+}
+#write .md-alert .md-math-block {
+    margin: var(--nest-gap-sm) 0;
+    padding: 0.5rem 0.7rem;
+    background: var(--elevated-bg);
+}
+/* Alert 套 Alert：内层更克制 */
+#write .md-alert .md-alert {
+    margin: var(--nest-gap-sm) 0 !important;
+    box-shadow: none !important;
+    padding: 0.55rem 0.8rem 0.65rem 0.9rem !important;
+}
+
+/* ----- 60.6 表格：嵌套上下文 + 单元格内联 ----- */
+#write li table,
+#write blockquote table,
+#write .md-alert table,
+#write details table,
+#write dd table {
+    width: auto !important;
+    max-width: 100%;
+    font-size: var(--nest-table-scale);
+}
+#write table th,
+#write table td {
+    /* 单元格内行内元素对齐 */
+    word-break: break-word;
+}
+#write table th code,
+#write table td code {
+    font-size: 0.84em;
+    white-space: nowrap;
+}
+#write table th .md-inline-math,
+#write table td .md-inline-math,
+#write table th mjx-container,
+#write table td mjx-container {
+    font-size: 0.96em !important;
+}
+#write table th kbd,
+#write table td kbd {
+    font-size: 0.78em;
+    padding: 0.05em 0.28em;
+}
+#write table th img,
+#write table td img {
+    max-height: 6rem;
+    max-width: 100%;
+    vertical-align: middle;
+}
+/* 表格内列表（HTML / 软换行） */
+#write table ul,
+#write table ol {
+    margin: 0.2em 0;
+    padding-left: 1.15em;
+    font-size: 0.95em;
+}
+
+/* ----- 60.7 定义列表 × 嵌套 ----- */
+#write dl {
+    margin: var(--nest-gap-lg) 0;
+}
+#write dt {
+    margin-top: 0.7rem;
+    font-weight: 700;
+    color: var(--accent-deep, var(--accent-color));
+    font-family: var(--font-ui);
+}
+#write dd {
+    margin: 0.25rem 0 0.5rem 0.2rem;
+    padding: 0.15rem 0 0.15rem 0.75rem;
+    border-left: 2px solid var(--border-color);
+    color: var(--control-text-color);
+}
+#write dd > p { margin: 0.25em 0; }
+#write dd > ul,
+#write dd > ol {
+    margin: 0.3em 0;
+    padding-left: 1.25em;
+}
+#write dd code { font-size: 0.88em; }
+#write dd .md-inline-math { font-size: 1em; }
+#write dd > .md-fences:not(.md-fences-advanced) {
+    margin: var(--nest-gap-sm) 0 !important;
+    font-size: var(--nest-code-scale) !important;
+}
+
+/* ----- 60.8 标题内行内：code / math / mark / link ----- */
+#write h1 code, #write h2 code, #write h3 code,
+#write h4 code, #write h5 code, #write h6 code {
+    font-size: 0.82em;
+    font-weight: 500;
+    padding: 0.05em 0.35em;
+    vertical-align: baseline;
+}
+#write h1 .md-inline-math, #write h2 .md-inline-math,
+#write h3 .md-inline-math, #write h4 .md-inline-math {
+    font-size: 0.92em !important;
+}
+#write h1 a, #write h2 a, #write h3 a,
+#write h4 a, #write h5 a, #write h6 a {
+    text-decoration: none;
+    border-bottom: 1px solid var(--link-underline, rgba(0,0,0,.2));
+}
+#write h1 a:hover, #write h2 a:hover, #write h3 a:hover {
+    color: var(--accent-color);
+    border-bottom-color: var(--accent-color);
+}
+#write h1 mark, #write h2 mark, #write h3 mark {
+    padding: 0.05em 0.25em;
+}
+
+/* ----- 60.9 行内组合：强调栈不脏 ----- */
+#write strong code,
+#write em code,
+#write mark code,
+#write del code {
+    font-size: 0.9em;
+}
+#write a code {
+    color: inherit;
+    text-decoration: none;
+}
+#write a:hover code {
+    color: var(--accent-color);
+}
+#write sup.md-footnote code {
+    font-size: inherit;
+    padding: 0;
+    background: transparent;
+    border: 0;
+}
+
+/* ----- 60.10 数学：嵌套容器密度 ----- */
+#write li .md-math-block,
+#write blockquote .md-math-block,
+#write .md-alert .md-math-block,
+#write details .md-math-block,
+#write dd .md-math-block {
+    margin: var(--nest-gap-sm) 0;
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--radius-sm, 6px);
+}
+#write li .md-inline-math,
+#write blockquote .md-inline-math,
+#write .md-alert .md-inline-math,
+#write details .md-inline-math {
+    font-size: var(--nest-math-scale) !important;
+}
+
+/* ----- 60.11 脚注引用出现在嵌套中 ----- */
+#write blockquote sup.md-footnote,
+#write li sup.md-footnote,
+#write .md-alert sup.md-footnote,
+#write table sup.md-footnote,
+#write details sup.md-footnote {
+    font-size: 0.7em !important;
+}
+
+/* ----- 60.12 代码围栏：仅非图示，嵌套安全 ----- */
+#write blockquote .md-fences:not(.md-fences-advanced),
+#write li .md-fences:not(.md-fences-advanced),
+#write .md-alert .md-fences:not(.md-fences-advanced),
+#write details .md-fences:not(.md-fences-advanced),
+#write dd .md-fences:not(.md-fences-advanced) {
+    max-width: 100% !important;
+    transform: none !important;
+    zoom: 1 !important;
+    white-space: pre !important;
+}
+
+/* 嵌套 mermaid：勿再给 preview 设 zoom（会与 §26 panel zoom 叠乘/抵消） */
+/* 嵌套缩放见 §26：.md-diagram-panel { zoom: nested } */
+
+/* ----- 60.13 TOC / YAML 与正文节奏 ----- */
+#write .md-toc + h1,
+#write .md-toc + h2,
+#write pre.md-meta-block + h1 {
+    margin-top: 1.25rem;
+}
+
+/* ----- 60.14 Ruby / kbd / samp 在嵌套 ----- */
+#write blockquote kbd,
+#write li kbd,
+#write table kbd,
+#write .md-alert kbd {
+    font-size: 0.8em;
+}
+#write blockquote ruby rt,
+#write li ruby rt {
+    font-size: 0.62em;
+}
+
+/* ----- 60.15 选区 / 焦点：嵌套块内一致 ----- */
+#write blockquote ::selection,
+#write details ::selection,
+#write .md-alert ::selection,
+#write li ::selection {
+    background-color: var(--select-text-bg-color);
+}
+
+/* ----- 60.16 打印：嵌套不丢层级感 ----- */
+@media print {
+    #write blockquote {
+        background: transparent !important;
+        border-left: 2pt solid #c4c2ba !important;
+    }
+    #write details {
+        border: 1px solid #d4d2ca !important;
+        background: #faf9f5 !important;
+    }
+    #write .md-alert {
+        box-shadow: none !important;
+        break-inside: avoid;
+    }
+    #write li > ul,
+    #write li > ol {
+        border-left-color: #e0ddd4 !important;
+    }
+}
+
+/* end §60 v17 nested elegance */
+
+/* ============================================================
+   §70  v20  MD RENDER SYNTHESIS
+   综合检索：GitHub markdown-css · Typora github/newsprint ·
+   vue.css / typo.css 中文排版 · Bear/iA 极简 · Obsidian callout ·
+   Claude Quiet 纸质气质 · 本主题 mermaid/details 工程约束
+   ============================================================ */
+
+/*
+ * 优点对照（取舍后落地）
+ * ─────────────────────────────────────────────
+ * GitHub          │ 栏宽响应式 · 表/码清晰 · 链接可辨 · 标题节奏
+ * Typora github   │ #write max-width + 大屏加宽 · Open Sans 可读
+ * vue / typo.css  │ 中文行高 1.7+ · 段距 · 字距克制
+ * Bear / iA       │ 少装饰、少彩条、强调正文
+ * Obsidian        │ callout 语义色 · 任务列表可点
+ * Claude Ember    │ 羊皮纸底 · 陶土强调 · 衬线正文 / 无衬线 UI
+ * 我们已验证       │ details 原生三角 · mermaid 舞台居中 · 禁框字脱节
+ * ─────────────────────────────────────────────
+ */
+
+/* ----- 70.1 栏宽与正文字距（GitHub + 中文） ----- */
+#write {
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    hanging-punctuation: first last;
+}
+#write p {
+    margin: var(--paragraph-gap, 0.72em) 0;
+    line-height: var(--body-line-height, 1.75);
+    letter-spacing: 0.01em;
+}
+/* 中英混排：避免过密 */
+#write {
+    font-optical-sizing: auto;
+}
+
+/* ----- 70.2 标题节奏（GitHub：上松下紧 + 底边分隔） ----- */
+#write h1 {
+    margin-top: 0.4rem;
+    margin-bottom: 1.05rem;
+    padding-bottom: 0.45rem;
+    border-bottom: 1px solid var(--border-soft);
+}
+#write h2 {
+    margin-top: 1.85rem;
+    margin-bottom: 0.65rem;
+    padding-bottom: 0.28rem;
+    border-bottom: 1px solid var(--border-soft);
+}
+#write h3 {
+    margin-top: 1.45rem;
+    margin-bottom: 0.5rem;
+}
+#write h4, #write h5, #write h6 {
+    margin-top: 1.2rem;
+    margin-bottom: 0.4rem;
+}
+/* 标题后紧跟列表/表：少空隙 */
+#write h1 + p, #write h2 + p, #write h3 + p,
+#write h4 + p, #write h5 + p, #write h6 + p {
+    margin-top: 0.45em;
+}
+#write h1 + ul, #write h2 + ul, #write h3 + ul,
+#write h1 + ol, #write h2 + ol, #write h3 + ol,
+#write h1 + .md-table-fig, #write h2 + .md-table-fig {
+    margin-top: 0.5em;
+}
+
+/* ----- 70.3 链接（陶土深色可辨，悬停亮陶土） ----- */
+#write a {
+    color: var(--accent-deep, #b55320);
+    text-decoration: underline;
+    text-decoration-color: var(--link-underline, rgba(181, 83, 32, 0.35));
+    text-underline-offset: 0.14em;
+    text-decoration-thickness: 1px;
+    transition: color var(--transition-fast), text-decoration-color var(--transition-fast);
+}
+#write a:hover {
+    color: var(--accent-color);
+    text-decoration-color: var(--accent-color);
+}
+/* 自动链接：等宽略小，防破版（GitHub mono URL 思路） */
+#write a.md-plain-url,
+#write span.md-plain-url,
+#write a.auto-link {
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+    word-break: break-all;
+}
+
+/* ----- 70.4 引用（GitHub 左边 + 我们的暖渐变，嵌套递进已在 §16） ----- */
+#write blockquote {
+    margin: 1em 0;
+    padding: 0.35rem 0 0.35rem 1rem;
+    color: var(--quote-text-color, var(--control-text-color));
+    border-left: 0.25em solid var(--quote-border-color, var(--border-color));
+}
+#write blockquote > :first-child { margin-top: 0.1em; }
+#write blockquote > :last-child { margin-bottom: 0.1em; }
+
+/* ----- 70.5 列表节奏（vue/typo：项距舒适，嵌套轨保留 §17） ----- */
+#write > ul, #write > ol {
+    margin: 0.65em 0;
+    padding-left: 1.55em;
+}
+#write li {
+    margin: 0.2em 0;
+    line-height: 1.68;
+}
+#write li > p {
+    margin: 0.2em 0;
+}
+/* 列表内代码/表不顶破 */
+#write li > .md-fences:not(.md-fences-advanced),
+#write li > .md-table-fig {
+    margin: 0.45em 0;
+    max-width: 100%;
+}
+
+/* ----- 70.6 表格（GitHub 网格 + 我们的 width:auto 防小表铺满） ----- */
+#write .md-table-fig,
+#write .table-figure {
+    margin: 1em 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: var(--radius-md);
+}
+#write table {
+    width: auto;
+    max-width: 100%;
+    border-collapse: collapse;
+    font-variant-numeric: tabular-nums;
+}
+#write table th {
+    font-family: var(--font-ui);
+    font-weight: 600;
+    background: var(--table-header-bg, var(--meta-bg));
+}
+#write table th,
+#write table td {
+    padding: 0.45rem 0.7rem;
+    border: 1px solid var(--table-grid-color, var(--border-soft));
+    vertical-align: top;
+    line-height: 1.45;
+}
+#write table tbody tr:nth-child(even) td {
+    background: var(--table-zebra, rgba(61, 61, 58, 0.03));
+}
+#write table tbody tr:hover td {
+    background: var(--table-hover-color, var(--accent-softer));
+}
+
+/* ----- 70.7 代码（GitHub 静音底 + Claude 陶土强调不抢戏） ----- */
+#write code,
+#write tt {
+    font-family: var(--font-mono);
+    font-size: 0.88em;
+    padding: 0.12em 0.35em;
+    border-radius: 4px;
+    background: var(--inline-code-bg-color);
+    border: 1px solid var(--inline-code-border-color);
+    color: var(--inline-code-color);
+}
+#write .md-fences:not(.md-fences-advanced) {
+    margin: 1em 0;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--code-border-color);
+    background: var(--code-bg-color);
+    /* 横向长码可滚，不撑版 */
+    overflow-x: auto;
+}
+#write .md-fences:not(.md-fences-advanced) .CodeMirror {
+    font-size: 0.9rem;
+    line-height: 1.55;
+}
+
+/* ----- 70.8 图片 / 媒体（居中、限宽、圆角卡片） ----- */
+#write img,
+#write .md-image img {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--radius-md);
+}
+#write p > .md-image:only-child,
+#write p > img:only-child {
+    display: block;
+    margin: 0.85em auto;
+}
+#write .md-image > .md-meta {
+    font-family: var(--font-ui);
+    font-size: 0.8rem;
+    color: var(--muted-text-color);
+}
+
+/* ----- 70.9 分隔线（克制，Bear 系） ----- */
+#write hr {
+    height: 0;
+    margin: 1.75em auto;
+    border: 0;
+    border-top: 1px solid var(--border-color);
+    max-width: 100%;
+    background: none;
+}
+
+/* ----- 70.10 任务列表（可点 + 完成态，Obsidian/GitHub） ----- */
+#write li.md-task-list-item > input[type="checkbox"] {
+    accent-color: var(--accent-color);
+    cursor: pointer;
+}
+#write li.md-task-list-item.task-list-done > p,
+#write li.md-task-list-item:has(> input:checked) > p {
+    color: var(--muted-text-color);
+    text-decoration: line-through;
+    text-decoration-color: var(--border-strong);
+}
+
+/* ----- 70.11 Alert / Callout（语义左边，Obsidian 思路 + 我们的 token） ----- */
+#write .md-alert {
+    margin: 1em 0;
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+    box-shadow: none;
+}
+#write .md-alert > :first-child { margin-top: 0.05em; }
+#write .md-alert > :last-child { margin-bottom: 0.05em; }
+#write .md-alert p { line-height: 1.65; }
+
+/* ----- 70.12 脚注 / TOC（分区卡片，不抢正文） ----- */
+#write .md-toc {
+    font-family: var(--font-ui);
+    font-size: 0.92rem;
+    line-height: 1.55;
+}
+#write .footnotes-area,
+#write .footnotes {
+    font-size: 0.88em;
+    color: var(--control-text-color);
+    line-height: 1.55;
+}
+
+/* ----- 70.13 数学（块级居中面板，嵌套不炸） ----- */
+#write .md-math-block,
+#write .mathjax-block {
+    margin: 1em 0;
+    overflow-x: auto;
+    text-align: center;
+}
+#write .md-inline-math {
+    padding: 0 0.08em;
+}
+
+/* 70.14 Mermaid：布局见 §26 v21 社区补丁 */
+
+/* ----- 70.15 选区 / 焦点（一致暖色） ----- */
+#write ::selection {
+    background: var(--select-text-bg-color);
+}
+#write:focus {
+    outline: none;
+}
+
+/* ----- 70.16 打印（GitHub 系：去阴影、保边框） ----- */
+@media print {
+    #write {
+        max-width: 100% !important;
+        padding: 0 !important;
+    }
+    #write a {
+        color: inherit !important;
+        text-decoration: underline !important;
+    }
+    /* mermaid print preview: stock */
+}
+
+/* end §70 v20 */
+
+/* ============================================================
+   §90  MERMAID 终裁 v32  — 必须放在文件最后（压过 §25/§70）
+   ============================================================
+   深度调研（Typora 1.13.7 frame.js + stock base.css + GitHub 主题）：
+
+   1) Typora 硬编码 flowchart.useMaxWidth = true
+      （frame.js: flowchart:{htmlLabels:!0,useMaxWidth:!0}）
+      全局 CSS 无法改 useMaxWidth；只能图内 %%{init}%%。
+
+   2) 库存居中机制（GitHub 主题零 mermaid CSS，靠 base.css）：
+        .md-fences { text-align:left }           ← 外层
+        .md-fences-adv-panel { text-align:center } ← 内层真正居中
+        .mermaid-svg { margin:auto }
+        SVG 默认 display:inline → 靠父级 text-align:center 居中
+
+   3) 我们 v27–v31 翻车：
+        display:block + width:max-content/auto + transform/zoom
+        → 破坏「inline + text-align」机制；width 仍 100% 时永远贴左
+
+   4) Claude-like 独有干扰：
+        #write { overflow-wrap:anywhere; word-break:break-word }
+        会继承进 foreignObject/htmlLabels 节点，干扰布局
+        GitHub 主题没有这条。
+
+   终裁原则：
+        - 完全恢复库存居中（inline SVG + adv-panel text-align:center）
+        - 禁止改 SVG 的 width/height/display/transform/zoom
+        - 切断 #write 换行策略对 diagram 子树的继承
+   ============================================================ */
+
+/* 90.1 外层围栏：mermaid / flow / sequence 同源居中（勿 nowrap） */
+#write .md-fences.md-fences-advanced[lang="mermaid"],
+#write .md-fences.md-fences-advanced[lang="flow"],
+#write .md-fences.md-fences-advanced[lang="sequence"],
+#write pre.md-fences.md-fences-advanced[lang="mermaid"],
+#write pre.md-fences.md-fences-advanced[lang="flow"],
+#write pre.md-fences.md-fences-advanced[lang="sequence"] {
+    text-align: center !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    background: inherit !important;
+    border: 0 !important;
+    padding: 0 !important;
+    transform: none !important;
+    zoom: 1 !important;
+}
+
+/* 90.2 preview / panel 居中 + 可横滚（宽 Gantt / XY 图） */
+#write .md-fences[lang="mermaid"] .md-fences-adv-panel,
+#write .md-fences[lang="mermaid"] .md-diagram-panel,
+#write .md-fences[lang="mermaid"] .md-diagram-panel-preview,
+#write .md-fences[lang="flow"] .md-diagram-panel,
+#write .md-fences[lang="flow"] .md-diagram-panel-preview,
+#write .md-fences[lang="sequence"] .md-diagram-panel,
+#write .md-fences[lang="sequence"] .md-diagram-panel-preview,
+.md-fences[lang="mermaid"] .md-diagram-panel-preview,
+.md-fences[lang="flow"] .md-diagram-panel-preview,
+.md-fences[lang="sequence"] .md-diagram-panel-preview {
+    text-align: center !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+    white-space: normal !important;
+    box-sizing: border-box !important;
+    padding: 0.65rem 0.35rem 0.85rem !important;
+}
+
+/* 90.3 SVG：inline + 居中。禁止 max-width:!important（盖掉 mermaid 内联 max-width） */
+#write .md-fences[lang="mermaid"] svg,
+#write .md-fences[lang="flow"] svg,
+#write .md-fences[lang="sequence"] svg,
+.md-fences[lang="mermaid"] svg,
+.md-fences[lang="flow"] svg,
+.md-fences[lang="sequence"] svg,
+[lang="mermaid"] .mermaid-svg {
+    display: inline !important;
+    float: none !important;
+    position: static !important;
+    height: auto;
+    margin: auto;
+    transform: none !important;
+    vertical-align: middle;
+}
+
+/* 90.4 mermaid htmlLabels：切断 #write overflow-wrap */
+#write .md-fences[lang="mermaid"],
+#write .md-fences[lang="mermaid"] .md-diagram-panel,
+#write .md-fences[lang="mermaid"] .md-diagram-panel-preview,
+#write .md-fences[lang="mermaid"] svg,
+#write .md-fences[lang="mermaid"] foreignObject,
+#write .md-fences[lang="mermaid"] .nodeLabel,
+#write .md-fences[lang="mermaid"] .nodeLabel p,
+#write .md-fences[lang="mermaid"] .edgeLabel,
+#write .md-fences[lang="mermaid"] span,
+#write .md-fences[lang="mermaid"] div {
+    word-break: normal !important;
+    overflow-wrap: normal !important;
+    word-wrap: normal !important;
+}
+
+/* 90.5 preview 内 div */
+#write .md-fences[lang="mermaid"] .md-diagram-panel-preview > div,
+#write .md-fences[lang="flow"] .md-diagram-panel-preview > div,
+#write .md-fences[lang="sequence"] .md-diagram-panel-preview > div {
+    width: initial !important;
+}
+
+/* 90.6 focus 边框 */
+#write .md-fences[lang="mermaid"].md-focus .md-diagram-panel,
+#write .md-fences[lang="flow"].md-focus .md-diagram-panel,
+#write .md-fences[lang="sequence"].md-focus .md-diagram-panel {
+    border: 1px solid var(--border-color, rgba(31, 30, 29, 0.14));
+    margin-left: -1px;
+    width: calc(100% + 2px);
+}
+
+/* 90.7 flow：默认偏小 → 放大（CDP: raw ~62px wide; 1.35 still cramped） */
+#write .md-fences[lang="flow"] .md-diagram-panel-preview {
+    zoom: var(--diagram-flow-zoom, 1.75);
+}
+
+/* 90.8 sequence：保证可读 */
+#write .md-fences[lang="sequence"] .md-diagram-panel-preview {
+    zoom: var(--diagram-sequence-zoom, 1.12);
+}
+
+/* 90.9 宽图（Gantt/Sankey/XY 等 mermaid 子类型）：预览区可横滚、底色安静 */
+#write .md-fences[lang="mermaid"] .md-diagram-panel-preview {
+    background: var(--diagram-canvas-bg, transparent);
+    border-radius: var(--radius-md, 10px);
+}
+
+/* 90.10 内嵌 HTML SVG（自定义正弦/图标等）：居中、限宽、不破栏 */
+#write .md-htmlblock-container svg,
+#write p > svg,
+#write div > svg:only-child {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0.75rem auto;
+}
+#write .md-htmlblock-container svg text {
+    font-family: var(--font-ui), system-ui, sans-serif;
+}
+
+/* end §90 */
+
+/* ============================================================
+   §91  CDP 全标签审计补丁 v34
+   依据：typora-md-audit / typora-deep-audit 实测
+   ============================================================ */
+
+/* 91.1 行内 code 底色更实一点，避免半透明对比度误读 */
+#write p code,
+#write li code,
+#write td code,
+#write th code,
+#write blockquote code {
+    background-color: var(--inline-code-bg-color);
+    border: 1px solid var(--inline-code-border-color);
+}
+
+/* 91.2 mark 高亮可见（与纸底区分） */
+#write mark {
+    background: var(--mark-wash, rgba(217, 119, 87, 0.28));
+    color: var(--text-color);
+    border-radius: 0.2em;
+    padding: 0.05em 0.2em;
+}
+
+/* 91.3 表格：表头与网格更清晰（窄表也有结构感） */
+#write table th {
+    background: var(--table-header-bg, #f0eee6);
+    border-bottom: 1.5px solid var(--table-border-strong-color, rgba(31, 30, 29, 0.28));
+}
+#write table td {
+    border-bottom: 1px solid var(--table-row-border-color, rgba(31, 30, 29, 0.1));
+}
+
+/* 91.4 kbd 边框在部分合成路径下 shorthand 为空 → 强制可见 */
+#write kbd {
+    border: 1px solid var(--kbd-border, #d4d2ca) !important;
+    border-bottom-width: 2px !important;
+}
+
+/* 91.5 任务列表：完成态更明显 */
+#write li.md-task-list-item.task-list-done,
+#write li.md-task-list-item.md-task-list-item-checked {
+    color: var(--control-text-color);
+}
+#write li.md-task-list-item.task-list-done > p,
+#write li.md-task-list-item.md-task-list-item-checked > p {
+    text-decoration: line-through;
+    text-decoration-color: var(--border-strong, rgba(31, 30, 29, 0.28));
+    opacity: 0.72;
+}
+
+/* 91.6 脚注区：与正文区隔 */
+#write .footnotes,
+#write .footnotes-area {
+    margin-top: 2.2rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-soft);
+    font-size: 0.9rem;
+    color: var(--control-text-color);
+}
+
+/* 91.7 TOC */
+#write .md-toc {
+    background: var(--meta-bg, #f0eee6);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-md, 10px);
+    padding: 0.85rem 1.1rem;
+    margin: 1.2em 0;
+}
+#write .md-toc-item {
+    color: var(--accent-deep, #b55320);
+}
+
+/* 91.8 空 details（无 summary）仍保留可辨认卡片，避免「空白灰块」 */
+#write details:not(:has(> summary)) {
+    border-left-color: var(--border-color);
+    color: var(--muted-text-color);
+    font-style: italic;
+}
+#write details:not(:has(> summary))::before {
+    content: "(无摘要的折叠块)";
+    font-size: 0.85rem;
+    font-family: var(--font-ui);
+}
+
+/* 91.9 公式块：居中感 + 与正文间距 */
+#write .md-math-block,
+#write .mathjax-block {
+    margin: 1.1em 0;
+    padding: 0.75rem 1rem;
+}
+
+/* 91.10 引用嵌套左边线层次 */
+#write blockquote blockquote {
+    border-left-color: var(--accent-color);
+    margin-left: 0.15em;
+}
+
+/* 91.11 链接终裁（压过 §70.3 旧「正文色链接」） */
+#write a {
+    color: var(--accent-deep, #b55320);
+    text-decoration-color: var(--link-underline, rgba(181, 83, 32, 0.38));
+}
+#write a:hover,
+#write a:focus {
+    color: var(--accent-color, #d97757);
+    text-decoration-color: var(--accent-color, #d97757);
+}
+#write a:visited {
+    color: var(--accent-deep, #b55320);
+}
+#write a[href^="#"] {
+    color: var(--control-text-color, #5c5a55);
+}
+
+/* 91.12 失败图片：Typora 可能把 display:none 打在 span 上，再抬一次 */
+#write span.md-image.md-img-error,
+#write .md-image.md-img-error {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    min-height: 4.5rem !important;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* end §91 */
+
+/* ============================================================
+   §92  SHOWCASE / 炫酷模式（调研落地 · 验收 §18）
+   - diff 围栏绿删红增
+   - badge 居中墙
+   - 简易卡片网格（学 Obsidian multi-column 精神，纯 HTML）
+   ============================================================ */
+
+/* 92.1 GitHub-style diff fence colors (CodeMirror diff mode + export) */
+#write .md-fences[lang="diff"] .cm-negative,
+#write .md-fences[lang="diff"] .cm-property.cm-negative,
+#write .md-fences[lang="diff"] .cm-deleted,
+#write pre.md-fences[lang="diff"] .cm-negative,
+#write .cm-s-inner .cm-negative {
+    color: var(--diff-del-fg, #9f1239) !important;
+    background: var(--diff-del-bg, rgba(180, 95, 81, 0.14));
+    border-radius: 2px;
+}
+#write .md-fences[lang="diff"] .cm-positive,
+#write .md-fences[lang="diff"] .cm-string.cm-positive,
+#write .md-fences[lang="diff"] .cm-inserted,
+#write pre.md-fences[lang="diff"] .cm-positive,
+#write .cm-s-inner .cm-positive {
+    color: var(--diff-add-fg, #166534) !important;
+    background: var(--diff-add-bg, rgba(120, 140, 93, 0.16));
+    border-radius: 2px;
+}
+/* Header lines --- +++ often cm-meta */
+#write .md-fences[lang="diff"] .cm-meta {
+    color: var(--control-text-color, #5c5a55) !important;
+    font-weight: 600;
+}
+#write .md-fences[lang="diff"]:not(.md-fences-advanced) {
+    border-left: 3px solid var(--accent-teal, #0d7a78);
+    background: var(--code-bg-color, rgba(255, 255, 255, 0.62));
+}
+
+/* 92.2 Centered showcase / badge wall */
+#write .md-showcase-center,
+#write div[align="center"].md-showcase-center,
+#write div.md-showcase-center {
+    text-align: center !important;
+    margin: 1.25rem auto 1.5rem;
+    padding: 1.1rem 1.25rem 1.25rem;
+    max-width: 100%;
+    background:
+        linear-gradient(180deg, var(--accent-softer, rgba(217, 119, 87, 0.06)), transparent 55%),
+        var(--elevated-bg, #fffcf7);
+    border: 1px solid var(--border-soft, rgba(31, 30, 29, 0.08));
+    border-radius: var(--radius-lg, 14px);
+    box-shadow: var(--shadow-card, 0 1px 2px rgba(31, 30, 29, 0.06));
+}
+#write .md-showcase-center img,
+#write .md-showcase-center .md-image {
+    display: inline-block !important;
+    margin: 0.2rem 0.28rem !important;
+    vertical-align: middle;
+    border: 0 !important;
+    box-shadow: none !important;
+    max-height: 1.75rem;
+}
+#write .md-showcase-center p,
+#write .md-showcase-center strong {
+    margin: 0.65rem 0 0;
+    font-family: var(--font-ui);
+    font-size: 0.95rem;
+    color: var(--control-text-color);
+}
+
+/* Generic align=center blocks (README habit) */
+#write div[align="center"] {
+    text-align: center;
+    margin: 0.85rem 0;
+}
+#write div[align="center"] img {
+    display: inline-block;
+    margin: 0.15rem 0.25rem;
+    vertical-align: middle;
+}
+
+/* 92.3 Card grid — Obsidian multi-column spirit without plugins */
+#write .md-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+    gap: 0.75rem;
+    margin: 1.1rem 0 1.35rem;
+}
+#write .md-card {
+    padding: 0.85rem 0.95rem;
+    background: var(--elevated-bg, #fffcf7);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-md, 10px);
+    border-top: 2.5px solid var(--accent-color, #d97757);
+    box-shadow: var(--shadow-card, none);
+    font-family: var(--font-ui);
+    font-size: 0.9rem;
+    line-height: 1.45;
+    color: var(--text-color);
+}
+#write .md-card strong {
+    display: block;
+    margin-bottom: 0.25rem;
+    color: var(--accent-deep, #b55320);
+    font-size: 0.95rem;
+}
+#write .md-card small {
+    color: var(--control-text-color, #5c5a55);
+    font-size: 0.82rem;
+}
+
+/* 92.4 Inline SVG progress bars in tables / paragraphs */
+#write td svg,
+#write p svg,
+#write li svg {
+    vertical-align: middle;
+}
+#write table td svg {
+    max-width: 100%;
+}
+
+/* 92.5 Single-cell “emoji callout table” slightly quieter */
+#write table:has(tr:only-child) th,
+#write table:has(tbody tr:only-child):not(:has(td)) {
+    font-family: var(--font-ui);
+}
+
+/* 92.6 Deep-nested Mermaid (quote depth ≥2): keep readable, allow horizontal scroll
+ * CDP 十层刑场: L4/L5 raw width ~90–160px — boost via min-width on preview, not node font */
+#write blockquote .md-fences[lang="mermaid"] .md-diagram-panel-preview,
+#write blockquote blockquote .md-fences[lang="mermaid"] .md-diagram-panel-preview {
+    min-width: min(100%, 18rem);
+    overflow-x: auto !important;
+}
+#write blockquote .md-fences[lang="mermaid"] svg,
+#write li .md-fences[lang="mermaid"] svg,
+#write .md-alert .md-fences[lang="mermaid"] svg {
+    min-width: 12rem;
+}
+/* Very deep quotes (4+): slight zoom on preview only */
+#write blockquote blockquote blockquote blockquote .md-fences[lang="mermaid"] .md-diagram-panel-preview {
+    zoom: 1.12;
+}
+#write blockquote blockquote blockquote blockquote blockquote blockquote .md-fences[lang="mermaid"] .md-diagram-panel-preview {
+    zoom: 1.18;
+}
+
+/* end §92 */
