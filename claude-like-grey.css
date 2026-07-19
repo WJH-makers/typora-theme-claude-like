@@ -176,4 +176,10 @@
     --content-max: 48rem;
     --content-max-lg: 52rem;
     --content-max-xl: 56rem;
+
+    /* Diff */
+    --diff-add-fg: #a8c8b0;
+    --diff-add-bg: rgba(150, 184, 144, 0.18);
+    --diff-del-fg: #e09090;
+    --diff-del-bg: rgba(180, 95, 81, 0.16);
 }
