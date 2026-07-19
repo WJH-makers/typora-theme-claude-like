@@ -83,7 +83,8 @@ body {
     letter-spacing: 0.003em;
     font-weight: 400;
     font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
-    word-break: break-word;
+    /* STABILITY: word-break normal（曾 break-word，稳定补丁终值） */
+    word-break: normal;
     overflow-wrap: break-word;
 }
 
@@ -681,6 +682,7 @@ hr, #write hr {
 .md-table-fig,
 .table-figure {
     margin: 1.15em 0;
+    max-width: 100%;
     overflow-x: auto;
     overflow-y: visible;
     -webkit-overflow-scrolling: touch;
@@ -1606,17 +1608,8 @@ pre.md-fences:not(.md-fences-advanced) {
     background: linear-gradient(90deg, var(--accent-color), var(--accent-blue), var(--accent-green));
     opacity: 0.75;
 }
-.md-toc::after {
-    content: "CONTENTS";
-    display: block;
-    font-family: var(--font-ui);
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    color: var(--muted-text-color);
-    margin-bottom: 0.55rem;
-    margin-top: 0.15rem;
-}
+/* （原 .md-toc::after "CONTENTS" 已被 quiet guard 的 content:none !important 压死 → 删；
+    实际渲染的 CONTENTS 标签来自 §50.2 的 ::before） */
 .md-toc-item, .md-toc-h1, .md-toc-h2, .md-toc-h3,
 .md-toc-h4, .md-toc-h5, .md-toc-h6 {
     font-family: var(--font-ui);
@@ -1879,6 +1872,39 @@ span[md-inline="html"] {
 /* soft break visualization when show whitespace (subtle) */
 #write .md-softbreak { }
 
+/* ----- Quiet guards（原 STABILITY PATCH）：绝不注入装饰性字形/伪元素 ----- */
+#write::after {
+    content: none !important;
+    display: none !important;
+}
+#write a::before,
+#write a::after,
+#write strong::before,
+#write em::before,
+#write del::before,
+#write mark::before,
+#write code::before,
+#write kbd::before,
+#write h1::after, #write h2::after, #write h3::after,
+#write h4::after, #write h5::after, #write h6::after,
+#write table::before,
+#write img::after,
+#write li.md-task-list-item::after,
+#write .md-alert::before,
+#write pre.md-meta-block::after,
+#write .md-math-block::before,
+#write .mathjax-block::before,
+#write dl::before,
+#write > ul::before,
+#write > ol::before,
+#write hr::after,
+#write .md-toc::after,
+#write li > ul::before,
+#write li > ol::before {
+    content: none !important;
+    display: none !important;
+}
+
 /* ========== 36. Source mode (syntax colors; CM geometry untouched) ========== */
 #typora-source .cm-s-inner .cm-header { color: var(--accent-deep) !important; font-weight: 700; }
 #typora-source .cm-s-inner .cm-link { color: var(--accent-blue) !important; }
@@ -1896,9 +1922,11 @@ span[md-inline="html"] {
     background-image: none;
     border: none;
     border-right: 1px solid var(--border-soft);
-    border-radius: 0;
-    margin: 0;
+    /* STABILITY: 锁几何（fight window.css） */
+    border-radius: 0 !important;
+    margin: 0 !important;
     height: 100% !important;
+    max-height: 100% !important;
     box-shadow: none;
     overflow: hidden;
 }
@@ -2292,61 +2320,6 @@ header, .context-menu, .megamenu-content, footer { font-family: var(--font-ui); 
         animation: none !important;
         transition: none !important;
     }
-}
-
-/* ============================================================
-   STABILITY PATCH · quiet + layout safety
-   ============================================================ */
-#typora-sidebar {
-    margin: 0 !important;
-    height: 100% !important;
-    max-height: 100% !important;
-    border-radius: 0 !important;
-}
-
-#write::after {
-    content: none !important;
-    display: none !important;
-}
-
-/* Never inject decorative syntax / glyphs */
-#write a::before,
-#write a::after,
-#write strong::before,
-#write em::before,
-#write del::before,
-#write mark::before,
-#write code::before,
-#write kbd::before,
-#write h1::after, #write h2::after, #write h3::after,
-#write h4::after, #write h5::after, #write h6::after,
-#write table::before,
-#write img::after,
-#write li.md-task-list-item::after,
-#write .md-alert::before,
-#write pre.md-meta-block::after,
-#write .md-math-block::before,
-#write .mathjax-block::before,
-#write dl::before,
-#write > ul::before,
-#write > ol::before,
-#write hr::after,
-#write .md-toc::after,
-#write li > ul::before,
-#write li > ol::before {
-    content: none !important;
-    display: none !important;
-}
-
-body {
-    overflow-wrap: break-word;
-    word-break: normal;
-}
-
-#write .md-table-fig,
-#write .table-figure {
-    max-width: 100%;
-    overflow-x: auto;
 }
 
 /* ========== 43. v7 Full MD composition & edge styles ========== */
