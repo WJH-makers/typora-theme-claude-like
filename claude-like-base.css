@@ -1959,10 +1959,11 @@ pre.md-fences:not(.md-fences-advanced) {
 .md-tag { color: var(--tag-color); opacity: 1; }
 .md-comment { color: var(--accent-color); font-style: italic; opacity: 0.85; }
 
-/* ========== 26. Diagrams  (v32 见文末 §90 终裁) ========== */
+/* ========== 26. Diagrams  (v32 · §90 mermaid 终裁已并入本节末) ========== */
 /*
- * Mermaid 几何/居中的最终规则放在文件最末 §90，保证压过前面所有规则。
- * 此处只保留非 mermaid 的 flow/echarts 卡片。
+ * Mermaid 几何/居中的最终规则在本节末 §90 块，靠 #write 前缀的高特异性
+ * 压过 §25 围栏通则与本节前部 flow/echarts 卡片规则（顺序 + 特异性均成立）。
+ * 此处先是非 mermaid 的 flow/echarts 卡片。
  */
 
 .md-diagram-panel-error {
@@ -2034,6 +2035,156 @@ pre.md-fences:not(.md-fences-advanced) {
     .md-fences.md-fences-advanced { break-inside: avoid; }
     .md-fences.md-fences-advanced[lang]::before { display: none !important; }
 }
+
+/* ============================================================
+   §90  MERMAID 终裁 v32 —— v40 起并入 §26 节末：
+   必须保持在 §25 围栏通则与本节 flow/echarts 卡片之后；
+   对 §25 的对抗靠 #write 前缀特异性（1,3,0）+ !important，位置已非必要条件
+   ============================================================
+   深度调研（Typora 1.13.7 frame.js + stock base.css + GitHub 主题）：
+
+   1) Typora 硬编码 flowchart.useMaxWidth = true
+      （frame.js: flowchart:{htmlLabels:!0,useMaxWidth:!0}）
+      全局 CSS 无法改 useMaxWidth；只能图内 %%{init}%%。
+
+   2) 库存居中机制（GitHub 主题零 mermaid CSS，靠 base.css）：
+        .md-fences { text-align:left }           ← 外层
+        .md-fences-adv-panel { text-align:center } ← 内层真正居中
+        .mermaid-svg { margin:auto }
+        SVG 默认 display:inline → 靠父级 text-align:center 居中
+
+   3) 我们 v27–v31 翻车：
+        display:block + width:max-content/auto + transform/zoom
+        → 破坏「inline + text-align」机制；width 仍 100% 时永远贴左
+
+   4) Claude-like 独有干扰：
+        #write { overflow-wrap:anywhere; word-break:break-word }
+        会继承进 foreignObject/htmlLabels 节点，干扰布局
+        GitHub 主题没有这条。
+
+   终裁原则：
+        - 完全恢复库存居中（inline SVG + adv-panel text-align:center）
+        - 禁止改 SVG 的 width/height/display/transform/zoom
+        - 切断 #write 换行策略对 diagram 子树的继承
+   ============================================================ */
+
+/* 90.1 外层围栏：mermaid / flow / sequence 同源居中（勿 nowrap） */
+#write .md-fences.md-fences-advanced[lang="mermaid"],
+#write .md-fences.md-fences-advanced[lang="flow"],
+#write .md-fences.md-fences-advanced[lang="sequence"],
+#write pre.md-fences.md-fences-advanced[lang="mermaid"],
+#write pre.md-fences.md-fences-advanced[lang="flow"],
+#write pre.md-fences.md-fences-advanced[lang="sequence"] {
+    text-align: center !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    background: inherit !important;
+    border: 0 !important;
+    padding: 0 !important;
+    transform: none !important;
+    zoom: 1 !important;
+}
+
+/* 90.2 preview / panel 居中 + 可横滚（宽 Gantt / XY 图） */
+#write .md-fences[lang="mermaid"] .md-fences-adv-panel,
+#write .md-fences[lang="mermaid"] .md-diagram-panel,
+#write .md-fences[lang="mermaid"] .md-diagram-panel-preview,
+#write .md-fences[lang="flow"] .md-diagram-panel,
+#write .md-fences[lang="flow"] .md-diagram-panel-preview,
+#write .md-fences[lang="sequence"] .md-diagram-panel,
+#write .md-fences[lang="sequence"] .md-diagram-panel-preview,
+.md-fences[lang="mermaid"] .md-diagram-panel-preview,
+.md-fences[lang="flow"] .md-diagram-panel-preview,
+.md-fences[lang="sequence"] .md-diagram-panel-preview {
+    text-align: center !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+    white-space: normal !important;
+    box-sizing: border-box !important;
+    padding: 0.65rem 0.35rem 0.85rem !important;
+}
+
+/* 90.3 SVG：inline + 居中。禁止 max-width:!important（盖掉 mermaid 内联 max-width） */
+#write .md-fences[lang="mermaid"] svg,
+#write .md-fences[lang="flow"] svg,
+#write .md-fences[lang="sequence"] svg,
+.md-fences[lang="mermaid"] svg,
+.md-fences[lang="flow"] svg,
+.md-fences[lang="sequence"] svg,
+[lang="mermaid"] .mermaid-svg {
+    display: inline !important;
+    float: none !important;
+    position: static !important;
+    height: auto;
+    margin: auto;
+    transform: none !important;
+    vertical-align: middle;
+}
+
+/* 90.4 mermaid htmlLabels：切断 #write overflow-wrap */
+#write .md-fences[lang="mermaid"],
+#write .md-fences[lang="mermaid"] .md-diagram-panel,
+#write .md-fences[lang="mermaid"] .md-diagram-panel-preview,
+#write .md-fences[lang="mermaid"] svg,
+#write .md-fences[lang="mermaid"] foreignObject,
+#write .md-fences[lang="mermaid"] .nodeLabel,
+#write .md-fences[lang="mermaid"] .nodeLabel p,
+#write .md-fences[lang="mermaid"] .edgeLabel,
+#write .md-fences[lang="mermaid"] span,
+#write .md-fences[lang="mermaid"] div {
+    word-break: normal !important;
+    overflow-wrap: normal !important;
+    word-wrap: normal !important;
+}
+
+/* 90.5 preview 内 div */
+#write .md-fences[lang="mermaid"] .md-diagram-panel-preview > div,
+#write .md-fences[lang="flow"] .md-diagram-panel-preview > div,
+#write .md-fences[lang="sequence"] .md-diagram-panel-preview > div {
+    width: initial !important;
+}
+
+/* 90.6 focus 边框 */
+#write .md-fences[lang="mermaid"].md-focus .md-diagram-panel,
+#write .md-fences[lang="flow"].md-focus .md-diagram-panel,
+#write .md-fences[lang="sequence"].md-focus .md-diagram-panel {
+    border: 1px solid var(--border-color, rgba(31, 30, 29, 0.14));
+    margin-left: -1px;
+    width: calc(100% + 2px);
+}
+
+/* 90.7 flow：默认偏小 → 放大（CDP: raw ~62px wide; 1.35 still cramped） */
+#write .md-fences[lang="flow"] .md-diagram-panel-preview {
+    zoom: var(--diagram-flow-zoom, 1.75);
+}
+
+/* 90.8 sequence：保证可读 */
+#write .md-fences[lang="sequence"] .md-diagram-panel-preview {
+    zoom: var(--diagram-sequence-zoom, 1.12);
+}
+
+/* 90.9 宽图（Gantt/Sankey/XY 等 mermaid 子类型）：预览区可横滚、底色安静 */
+#write .md-fences[lang="mermaid"] .md-diagram-panel-preview {
+    background: var(--diagram-canvas-bg, transparent);
+    border-radius: var(--radius-md, 10px);
+}
+
+/* 90.10 内嵌 HTML SVG（自定义正弦/图标等）：居中、限宽、不破栏 */
+#write .md-htmlblock-container svg,
+#write p > svg,
+#write div > svg:only-child {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0.75rem auto;
+}
+#write .md-htmlblock-container svg text {
+    font-family: var(--font-ui), system-ui, sans-serif;
+}
+
+/* end §90 */
 
 /* ========== end §26 ========== */
 /* ========== 27. Math  $inline$  $$block$$  (v9 nested + display size) ========== */
@@ -3382,154 +3533,6 @@ header, .context-menu, .megamenu-content, footer { font-family: var(--font-ui); 
    70.7→§12/§25 · 70.8→§22 · 70.9→§20 · 70.10→§18 · 70.11→§31 ·
    70.12→§29/§30 · 70.13→§27/§43 · 70.15→§2 · 70.16→§40；死值已删
    ============================================================ */
-
-/* ============================================================
-   §90  MERMAID 终裁 v32  — 必须放在文件最后（压过 §25/§70）
-   ============================================================
-   深度调研（Typora 1.13.7 frame.js + stock base.css + GitHub 主题）：
-
-   1) Typora 硬编码 flowchart.useMaxWidth = true
-      （frame.js: flowchart:{htmlLabels:!0,useMaxWidth:!0}）
-      全局 CSS 无法改 useMaxWidth；只能图内 %%{init}%%。
-
-   2) 库存居中机制（GitHub 主题零 mermaid CSS，靠 base.css）：
-        .md-fences { text-align:left }           ← 外层
-        .md-fences-adv-panel { text-align:center } ← 内层真正居中
-        .mermaid-svg { margin:auto }
-        SVG 默认 display:inline → 靠父级 text-align:center 居中
-
-   3) 我们 v27–v31 翻车：
-        display:block + width:max-content/auto + transform/zoom
-        → 破坏「inline + text-align」机制；width 仍 100% 时永远贴左
-
-   4) Claude-like 独有干扰：
-        #write { overflow-wrap:anywhere; word-break:break-word }
-        会继承进 foreignObject/htmlLabels 节点，干扰布局
-        GitHub 主题没有这条。
-
-   终裁原则：
-        - 完全恢复库存居中（inline SVG + adv-panel text-align:center）
-        - 禁止改 SVG 的 width/height/display/transform/zoom
-        - 切断 #write 换行策略对 diagram 子树的继承
-   ============================================================ */
-
-/* 90.1 外层围栏：mermaid / flow / sequence 同源居中（勿 nowrap） */
-#write .md-fences.md-fences-advanced[lang="mermaid"],
-#write .md-fences.md-fences-advanced[lang="flow"],
-#write .md-fences.md-fences-advanced[lang="sequence"],
-#write pre.md-fences.md-fences-advanced[lang="mermaid"],
-#write pre.md-fences.md-fences-advanced[lang="flow"],
-#write pre.md-fences.md-fences-advanced[lang="sequence"] {
-    text-align: center !important;
-    white-space: normal !important;
-    overflow: visible !important;
-    background: inherit !important;
-    border: 0 !important;
-    padding: 0 !important;
-    transform: none !important;
-    zoom: 1 !important;
-}
-
-/* 90.2 preview / panel 居中 + 可横滚（宽 Gantt / XY 图） */
-#write .md-fences[lang="mermaid"] .md-fences-adv-panel,
-#write .md-fences[lang="mermaid"] .md-diagram-panel,
-#write .md-fences[lang="mermaid"] .md-diagram-panel-preview,
-#write .md-fences[lang="flow"] .md-diagram-panel,
-#write .md-fences[lang="flow"] .md-diagram-panel-preview,
-#write .md-fences[lang="sequence"] .md-diagram-panel,
-#write .md-fences[lang="sequence"] .md-diagram-panel-preview,
-.md-fences[lang="mermaid"] .md-diagram-panel-preview,
-.md-fences[lang="flow"] .md-diagram-panel-preview,
-.md-fences[lang="sequence"] .md-diagram-panel-preview {
-    text-align: center !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    overflow-x: auto !important;
-    overflow-y: visible !important;
-    white-space: normal !important;
-    box-sizing: border-box !important;
-    padding: 0.65rem 0.35rem 0.85rem !important;
-}
-
-/* 90.3 SVG：inline + 居中。禁止 max-width:!important（盖掉 mermaid 内联 max-width） */
-#write .md-fences[lang="mermaid"] svg,
-#write .md-fences[lang="flow"] svg,
-#write .md-fences[lang="sequence"] svg,
-.md-fences[lang="mermaid"] svg,
-.md-fences[lang="flow"] svg,
-.md-fences[lang="sequence"] svg,
-[lang="mermaid"] .mermaid-svg {
-    display: inline !important;
-    float: none !important;
-    position: static !important;
-    height: auto;
-    margin: auto;
-    transform: none !important;
-    vertical-align: middle;
-}
-
-/* 90.4 mermaid htmlLabels：切断 #write overflow-wrap */
-#write .md-fences[lang="mermaid"],
-#write .md-fences[lang="mermaid"] .md-diagram-panel,
-#write .md-fences[lang="mermaid"] .md-diagram-panel-preview,
-#write .md-fences[lang="mermaid"] svg,
-#write .md-fences[lang="mermaid"] foreignObject,
-#write .md-fences[lang="mermaid"] .nodeLabel,
-#write .md-fences[lang="mermaid"] .nodeLabel p,
-#write .md-fences[lang="mermaid"] .edgeLabel,
-#write .md-fences[lang="mermaid"] span,
-#write .md-fences[lang="mermaid"] div {
-    word-break: normal !important;
-    overflow-wrap: normal !important;
-    word-wrap: normal !important;
-}
-
-/* 90.5 preview 内 div */
-#write .md-fences[lang="mermaid"] .md-diagram-panel-preview > div,
-#write .md-fences[lang="flow"] .md-diagram-panel-preview > div,
-#write .md-fences[lang="sequence"] .md-diagram-panel-preview > div {
-    width: initial !important;
-}
-
-/* 90.6 focus 边框 */
-#write .md-fences[lang="mermaid"].md-focus .md-diagram-panel,
-#write .md-fences[lang="flow"].md-focus .md-diagram-panel,
-#write .md-fences[lang="sequence"].md-focus .md-diagram-panel {
-    border: 1px solid var(--border-color, rgba(31, 30, 29, 0.14));
-    margin-left: -1px;
-    width: calc(100% + 2px);
-}
-
-/* 90.7 flow：默认偏小 → 放大（CDP: raw ~62px wide; 1.35 still cramped） */
-#write .md-fences[lang="flow"] .md-diagram-panel-preview {
-    zoom: var(--diagram-flow-zoom, 1.75);
-}
-
-/* 90.8 sequence：保证可读 */
-#write .md-fences[lang="sequence"] .md-diagram-panel-preview {
-    zoom: var(--diagram-sequence-zoom, 1.12);
-}
-
-/* 90.9 宽图（Gantt/Sankey/XY 等 mermaid 子类型）：预览区可横滚、底色安静 */
-#write .md-fences[lang="mermaid"] .md-diagram-panel-preview {
-    background: var(--diagram-canvas-bg, transparent);
-    border-radius: var(--radius-md, 10px);
-}
-
-/* 90.10 内嵌 HTML SVG（自定义正弦/图标等）：居中、限宽、不破栏 */
-#write .md-htmlblock-container svg,
-#write p > svg,
-#write div > svg:only-child {
-    max-width: 100%;
-    height: auto;
-    display: block;
-    margin: 0.75rem auto;
-}
-#write .md-htmlblock-container svg text {
-    font-family: var(--font-ui), system-ui, sans-serif;
-}
-
-/* end §90 */
 
 /* ============================================================
    §91  CDP 全标签审计补丁 v34
