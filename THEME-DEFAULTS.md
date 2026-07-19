@@ -39,11 +39,10 @@
 | 序列 | `sequence` 或 mermaid sequence | js-sequence（legacy） |
 | 流程 | `flow` | flowchart.js（legacy） |
 | 任意矢量/正弦/图标 | HTML **SVG** | 最自由 |
-| architecture-beta | 简单 group/service 可过 | 复杂布局视引擎而定 |
-| venn-beta | 须 `set` / `union` | 勿用 `A&B` 缩写 |
+| architecture-beta | ❌ Typora 未支持 | 勿写验收通过 |
 | ECharts 动态交互 | ❌ 无内置 | 导出图插入 |
 
-本地验收套件（可选，不在本仓库）：桌面 `Typora_Mermaid全类型_CDP实测.md`
+演示：`Desktop\图表与可视化全类型实验室.md` · `Desktop\claude-like-全标签嵌套验收.md`
 
 ## 4. 主题对图的约定
 

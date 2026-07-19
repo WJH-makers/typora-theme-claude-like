@@ -152,8 +152,8 @@
 
     --content-pad-x: 2rem;
     --content-pad-y: 2.5rem;
-    --body-line-height: 1.72;
-    --paragraph-gap: 0.75em;
+    --body-line-height: 1.75;
+    --paragraph-gap: 0.72em;
     --radius-sm: 6px;
     --radius-md: 10px;
     --radius-lg: 14px;
@@ -174,4 +174,12 @@
     --diagram-flow-zoom: 1.35;
     --diagram-sequence-zoom: 1.08;
     --content-max: 48rem;
+    --content-max-lg: 52rem;
+    --content-max-xl: 56rem;
+
+    /* Diff */
+    --diff-add-fg: #a8c8b0;
+    --diff-add-bg: rgba(150, 184, 144, 0.18);
+    --diff-del-fg: #e09090;
+    --diff-del-bg: rgba(180, 95, 81, 0.16);
 }
