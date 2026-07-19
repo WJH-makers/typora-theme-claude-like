@@ -2034,6 +2034,35 @@ pre.md-fences:not(.md-fences-advanced) {
 .md-tag { color: var(--tag-color); opacity: 1; }
 .md-comment { color: var(--accent-color); font-style: italic; opacity: 0.85; }
 
+/* ----- §92.1 已并入：GitHub 风 diff 围栏配色（CodeMirror diff mode + export） ----- */
+#write .md-fences[lang="diff"] .cm-negative,
+#write .md-fences[lang="diff"] .cm-property.cm-negative,
+#write .md-fences[lang="diff"] .cm-deleted,
+#write pre.md-fences[lang="diff"] .cm-negative,
+#write .cm-s-inner .cm-negative {
+    color: var(--diff-del-fg, #9f1239) !important;
+    background: var(--diff-del-bg, rgba(180, 95, 81, 0.14));
+    border-radius: 2px;
+}
+#write .md-fences[lang="diff"] .cm-positive,
+#write .md-fences[lang="diff"] .cm-string.cm-positive,
+#write .md-fences[lang="diff"] .cm-inserted,
+#write pre.md-fences[lang="diff"] .cm-positive,
+#write .cm-s-inner .cm-positive {
+    color: var(--diff-add-fg, #166534) !important;
+    background: var(--diff-add-bg, rgba(120, 140, 93, 0.16));
+    border-radius: 2px;
+}
+/* Header lines --- +++ often cm-meta */
+#write .md-fences[lang="diff"] .cm-meta {
+    color: var(--control-text-color, #5c5a55) !important;
+    font-weight: 600;
+}
+#write .md-fences[lang="diff"]:not(.md-fences-advanced) {
+    border-left: 3px solid var(--accent-teal, #0d7a78);
+    background: var(--code-bg-color, rgba(255, 255, 255, 0.62));
+}
+
 /* ========== 26. Diagrams  (v32 · §90 mermaid 终裁已并入本节末) ========== */
 /*
  * Mermaid 几何/居中的最终规则在本节末 §90 块，靠 #write 前缀的高特异性
@@ -2260,6 +2289,25 @@ pre.md-fences:not(.md-fences-advanced) {
 }
 
 /* end §90 */
+
+/* ----- §92.6 已并入：深嵌套 Mermaid（引用 ≥2 层）可读性 ----- */
+#write blockquote .md-fences[lang="mermaid"] .md-diagram-panel-preview,
+#write blockquote blockquote .md-fences[lang="mermaid"] .md-diagram-panel-preview {
+    min-width: min(100%, 18rem);
+    overflow-x: auto !important;
+}
+#write blockquote .md-fences[lang="mermaid"] svg,
+#write li .md-fences[lang="mermaid"] svg,
+#write .md-alert .md-fences[lang="mermaid"] svg {
+    min-width: 12rem;
+}
+/* Very deep quotes (4+): slight zoom on preview only */
+#write blockquote blockquote blockquote blockquote .md-fences[lang="mermaid"] .md-diagram-panel-preview {
+    zoom: 1.12;
+}
+#write blockquote blockquote blockquote blockquote blockquote blockquote .md-fences[lang="mermaid"] .md-diagram-panel-preview {
+    zoom: 1.18;
+}
 
 /* ========== end §26 ========== */
 /* ========== 27. Math  $inline$  $$block$$  (v9 nested + display size) ========== */
@@ -3622,42 +3670,12 @@ header, .context-menu, .megamenu-content, footer { font-family: var(--font-ui); 
    ============================================================ */
 
 /* ============================================================
-   §92  SHOWCASE / 炫酷模式（调研落地 · 验收 §18）
-   - diff 围栏绿删红增
-   - badge 居中墙
-   - 简易卡片网格（学 Obsidian multi-column 精神，纯 HTML）
+   §44  SHOWCASE / RICH HTML（原 §92 常规化：非补丁，正式末节）
+   - badge 居中墙 · 卡片网格（Obsidian multi-column 精神，纯 HTML）
+   - 92.1 diff 配色已并入 §25 · 92.6 深嵌套 mermaid 已并入 §26
    ============================================================ */
 
-/* 92.1 GitHub-style diff fence colors (CodeMirror diff mode + export) */
-#write .md-fences[lang="diff"] .cm-negative,
-#write .md-fences[lang="diff"] .cm-property.cm-negative,
-#write .md-fences[lang="diff"] .cm-deleted,
-#write pre.md-fences[lang="diff"] .cm-negative,
-#write .cm-s-inner .cm-negative {
-    color: var(--diff-del-fg, #9f1239) !important;
-    background: var(--diff-del-bg, rgba(180, 95, 81, 0.14));
-    border-radius: 2px;
-}
-#write .md-fences[lang="diff"] .cm-positive,
-#write .md-fences[lang="diff"] .cm-string.cm-positive,
-#write .md-fences[lang="diff"] .cm-inserted,
-#write pre.md-fences[lang="diff"] .cm-positive,
-#write .cm-s-inner .cm-positive {
-    color: var(--diff-add-fg, #166534) !important;
-    background: var(--diff-add-bg, rgba(120, 140, 93, 0.16));
-    border-radius: 2px;
-}
-/* Header lines --- +++ often cm-meta */
-#write .md-fences[lang="diff"] .cm-meta {
-    color: var(--control-text-color, #5c5a55) !important;
-    font-weight: 600;
-}
-#write .md-fences[lang="diff"]:not(.md-fences-advanced) {
-    border-left: 3px solid var(--accent-teal, #0d7a78);
-    background: var(--code-bg-color, rgba(255, 255, 255, 0.62));
-}
-
-/* 92.2 Centered showcase / badge wall */
+/* 44.1（原 92.2）Centered showcase / badge wall */
 #write .md-showcase-center,
 #write div[align="center"].md-showcase-center,
 #write div.md-showcase-center {
@@ -3700,7 +3718,7 @@ header, .context-menu, .megamenu-content, footer { font-family: var(--font-ui); 
     vertical-align: middle;
 }
 
-/* 92.3 Card grid — Obsidian multi-column spirit without plugins */
+/* 44.2（原 92.3）Card grid — Obsidian multi-column spirit without plugins */
 #write .md-card-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
@@ -3730,7 +3748,7 @@ header, .context-menu, .megamenu-content, footer { font-family: var(--font-ui); 
     font-size: 0.82rem;
 }
 
-/* 92.4 Inline SVG progress bars in tables / paragraphs */
+/* 44.3（原 92.4）Inline SVG progress bars in tables / paragraphs */
 #write td svg,
 #write p svg,
 #write li svg {
@@ -3740,30 +3758,10 @@ header, .context-menu, .megamenu-content, footer { font-family: var(--font-ui); 
     max-width: 100%;
 }
 
-/* 92.5 Single-cell “emoji callout table” slightly quieter */
+/* 44.4（原 92.5）Single-cell “emoji callout table” slightly quieter */
 #write table:has(tr:only-child) th,
 #write table:has(tbody tr:only-child):not(:has(td)) {
     font-family: var(--font-ui);
 }
 
-/* 92.6 Deep-nested Mermaid (quote depth ≥2): keep readable, allow horizontal scroll
- * CDP 十层刑场: L4/L5 raw width ~90–160px — boost via min-width on preview, not node font */
-#write blockquote .md-fences[lang="mermaid"] .md-diagram-panel-preview,
-#write blockquote blockquote .md-fences[lang="mermaid"] .md-diagram-panel-preview {
-    min-width: min(100%, 18rem);
-    overflow-x: auto !important;
-}
-#write blockquote .md-fences[lang="mermaid"] svg,
-#write li .md-fences[lang="mermaid"] svg,
-#write .md-alert .md-fences[lang="mermaid"] svg {
-    min-width: 12rem;
-}
-/* Very deep quotes (4+): slight zoom on preview only */
-#write blockquote blockquote blockquote blockquote .md-fences[lang="mermaid"] .md-diagram-panel-preview {
-    zoom: 1.12;
-}
-#write blockquote blockquote blockquote blockquote blockquote blockquote .md-fences[lang="mermaid"] .md-diagram-panel-preview {
-    zoom: 1.18;
-}
-
-/* end §92 */
+/* end §44 (原 §92) */
