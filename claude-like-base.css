@@ -1,5 +1,10 @@
 /* ============================================================
-   Claude-like · Base  v37  CLEAN + DIAGRAMS + DUAL-SCRIPT FONTS
+   Claude-like · Base  v40  FLAT SECTIONS（补丁层已全部折叠）
+   - 结构：§0–§44 单层节；原 STABILITY/§50/§60/§70/§90/§91/§92
+     补丁层已按「活值并入原节 · 死值删除」折叠（各层墓碑注释留在§43 后）
+   - 像素级等值验证：3 皮肤 PrintWindow 截图 0px diff + 冻结真实 DOM
+     computed-style 审计 18 通道 0 diff（screen/narrow/print/reduced/
+     hover/focusmode × light/dark/grey）
    - Anthropic: Latin-only unicode-range (listed first in stack)
    - Noto Serif SC: CJK-only unicode-range (must NOT steal Latin)
    - No universal box-sizing (CM / mermaid)
