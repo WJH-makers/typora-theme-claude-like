@@ -15,7 +15,7 @@ if (-not (Test-Path $Target)) {
 
 $files = @(
     "claude-like.css",
-            "claude-like-base.css",
+    "claude-like-base.css",
     "claude-like.user.css"
 )
 
@@ -38,11 +38,6 @@ if (Test-Path $fontDst) {
 Copy-Item $fontSrc $fontDst -Recurse -Force
 Write-Host "  OK  claude_fonts/"
 
-# No optional docs (removed v1.1)
-
-}
-
 Write-Host ""
 Write-Host "Installed. Fully quit Typora, reopen, then Theme → Claude Like."
-Write-Host "Skin: Claude Like (Light only)`n"
-
+Write-Host "Skin: Claude Like (Light only)"
