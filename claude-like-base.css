@@ -26,6 +26,18 @@
     --alert-important-label: var(--accent-purple, #8b6f9d);
     --alert-warning-label: var(--accent-gold, #ad7837);
     --alert-caution-label: var(--accent-rose, #b45f51);
+    /* §60 嵌套韵律刻度（v40 折叠；rail-accent/soft-bg 无规则引用，仅为继承树等值保留） */
+    --nest-gap-xs: 0.28em;
+    --nest-gap-sm: 0.4em;
+    --nest-gap-md: 0.55em;
+    --nest-gap-lg: 0.75em;
+    --nest-indent: 1.2em;
+    --nest-rail: 1px solid var(--border-soft);
+    --nest-rail-accent: 2px solid var(--accent-color);
+    --nest-soft-bg: var(--meta-bg, #f0eee6);
+    --nest-code-scale: 0.9em;
+    --nest-table-scale: 0.9em;
+    --nest-math-scale: 0.98em;
 }
 
 /* ========== 0. Fonts ==========
@@ -91,6 +103,13 @@ body {
 ::selection {
     background-color: var(--select-text-bg-color);
     color: var(--heading-color);
+}
+/* §60.15 已并入：嵌套块内选区一致 */
+#write blockquote ::selection,
+#write details ::selection,
+#write .md-alert ::selection,
+#write li ::selection {
+    background-color: var(--select-text-bg-color);
 }
 
 content,
@@ -230,6 +249,31 @@ h6, #write h6 {
 #write > h5.md-focus:before,
 #write > h6.md-focus:before { top: 0.285714286rem; }
 
+/* ----- §60.8 已并入：标题内行内元素（code/math/link/mark） ----- */
+#write h1 code, #write h2 code, #write h3 code,
+#write h4 code, #write h5 code, #write h6 code {
+    font-size: 0.82em;
+    font-weight: 500;
+    padding: 0.05em 0.35em;
+    vertical-align: baseline;
+}
+#write h1 .md-inline-math, #write h2 .md-inline-math,
+#write h3 .md-inline-math, #write h4 .md-inline-math {
+    font-size: 0.92em !important;
+}
+#write h1 a, #write h2 a, #write h3 a,
+#write h4 a, #write h5 a, #write h6 a {
+    text-decoration: none;
+    border-bottom: 1px solid var(--link-underline, rgba(0,0,0,.2));
+}
+#write h1 a:hover, #write h2 a:hover, #write h3 a:hover {
+    color: var(--accent-color);
+    border-bottom-color: var(--accent-color);
+}
+#write h1 mark, #write h2 mark, #write h3 mark {
+    padding: 0.05em 0.25em;
+}
+
 /* ========== 4. Paragraph ========== */
 p, #write p {
     margin: var(--paragraph-gap, 0.75em) 0;
@@ -350,6 +394,21 @@ code, tt, #write code, #write tt {
     word-break: break-word;
 }
 
+/* ----- §60.9 已并入：行内组合（强调栈内 code 不脏） ----- */
+#write strong code,
+#write em code,
+#write mark code,
+#write del code {
+    font-size: 0.9em;
+}
+#write a code {
+    color: inherit;
+    text-decoration: none;
+}
+#write a:hover code {
+    color: var(--accent-color);
+}
+
 /* ========== 13. Kbd  <kbd>  ========== */
 /* §50.12 已并入：padding/box-shadow 取补丁终值（无 glass 内高光） */
 kbd, #write kbd {
@@ -366,6 +425,13 @@ kbd, #write kbd {
     border-radius: 5px;
     box-shadow: 0 1px 0 var(--kbd-shadow, #c4c2ba);
     white-space: nowrap;
+}
+/* §60.14 已并入：嵌套上下文 kbd */
+#write blockquote kbd,
+#write li kbd,
+#write table kbd,
+#write .md-alert kbd {
+    font-size: 0.8em;
 }
 
 /* ========== 14. Samp / Var  <samp> <var>  ========== */
@@ -466,6 +532,77 @@ blockquote footer, blockquote cite {
     opacity: 0.95;
 }
 
+/* ----- §60.1 已并入：深层引用 1–6 渐弱 + 引用内块内容韵律。
+   一层引用的 margin/padding/border-left 终值在 §70.4 折叠块 ----- */
+#write blockquote {
+    background: linear-gradient(90deg, var(--accent-softer), transparent 68%);
+}
+#write blockquote blockquote {
+    margin: var(--nest-gap-sm) 0;
+    padding-left: 0.85rem;
+    border-left-color: var(--accent-color);
+    background: linear-gradient(90deg, var(--accent-softer), transparent 55%);
+    opacity: 1;
+}
+#write blockquote blockquote blockquote {
+    border-left-color: var(--border-strong);
+    background: linear-gradient(90deg, var(--border-soft), transparent 50%);
+}
+#write blockquote blockquote blockquote blockquote {
+    border-left-width: 2px;
+    border-left-color: var(--muted-text-color);
+    background: transparent;
+    opacity: 0.97;
+}
+#write blockquote blockquote blockquote blockquote blockquote {
+    border-left-width: 2px;
+    border-left-style: dashed;
+    border-left-color: var(--border-color);
+    opacity: 0.95;
+}
+#write blockquote blockquote blockquote blockquote blockquote blockquote {
+    border-left-style: dotted;
+    opacity: 0.93;
+}
+#write blockquote > :first-child { margin-top: 0.1em !important; }
+#write blockquote > :last-child { margin-bottom: 0.1em !important; }
+#write blockquote ul,
+#write blockquote ol {
+    margin: var(--nest-gap-sm) 0;
+    padding-left: 1.35em;
+}
+#write blockquote li { margin: 0.12em 0; line-height: 1.6; }
+#write blockquote .md-fences:not(.md-fences-advanced),
+#write blockquote pre.md-fences:not(.md-fences-advanced) {
+    margin: var(--nest-gap-md) 0 !important;
+    font-size: var(--nest-code-scale) !important;
+}
+#write blockquote table,
+#write blockquote .md-table-fig {
+    margin: var(--nest-gap-md) 0;
+    font-size: var(--nest-table-scale);
+    width: auto;
+    max-width: 100%;
+}
+#write blockquote .md-math-block,
+#write blockquote .mathjax-block {
+    margin: var(--nest-gap-md) 0;
+    padding: 0.55rem 0.75rem;
+    font-size: 0.95em;
+}
+#write blockquote .md-alert {
+    margin: var(--nest-gap-md) 0 !important;
+    box-shadow: none !important;
+}
+#write blockquote details {
+    margin: var(--nest-gap-md) 0;
+    background: var(--elevated-bg, #fffcf7);
+}
+#write blockquote hr {
+    margin: 0.85em 0;
+    opacity: 0.7;
+}
+
 /* ========== 17. Lists  - * +  1.  nested  (fixed) ========== */
 /* Top-level lists */
 #write > ul,
@@ -562,6 +699,61 @@ li p.first {
 /* §50.15：紧凑列表单段更贴（高特异性，压过 li > p 通则） */
 #write li.md-list-item > p:only-child { margin: 0.1em 0; }
 
+/* ----- §60.2 已并入：六层列表缩进轨 + 列表项内块内容韵律。
+   顶层 ul/ol 外距终值在 §70.5 折叠块 ----- */
+#write ul,
+#write ol {
+    margin: var(--nest-gap-md) 0;
+    padding-left: 1.55em;
+}
+#write li > ul,
+#write li > ol {
+    margin: var(--nest-gap-xs) 0 var(--nest-gap-sm);
+    padding-left: var(--nest-indent);
+    border-left: var(--nest-rail);
+}
+/* 深层列表：几乎不缩字号（CDP：6–7 层曾叠到 ~14px，略影响可读） */
+#write li li li li { font-size: 0.995em; }
+#write li li li li li { font-size: 0.995em; }
+#write li li li li li li { font-size: 0.99em; }
+#write li > .md-fences:not(.md-fences-advanced),
+#write li > pre.md-fences:not(.md-fences-advanced) {
+    margin: var(--nest-gap-sm) 0 !important;
+    font-size: var(--nest-code-scale) !important;
+    max-width: 100%;
+}
+#write li > table,
+#write li > .md-table-fig {
+    margin: var(--nest-gap-sm) 0;
+    font-size: var(--nest-table-scale);
+    width: auto;
+    max-width: 100%;
+}
+#write li > blockquote {
+    margin: var(--nest-gap-sm) 0;
+    padding-left: 0.75rem;
+}
+#write li > .md-math-block,
+#write li > .mathjax-block {
+    margin: var(--nest-gap-sm) 0;
+    padding: 0.5rem 0.7rem;
+}
+#write li > .md-alert {
+    margin: var(--nest-gap-sm) 0 !important;
+    box-shadow: none !important;
+}
+#write li > details {
+    margin: var(--nest-gap-sm) 0;
+}
+#write li > p + p {
+    margin-top: 0.4em;
+    color: var(--control-text-color);
+}
+#write ol > li > ul,
+#write ul > li > ol {
+    margin-top: var(--nest-gap-xs);
+}
+
 /* ========== 18. Task list  - [ ]  - [x]  ========== */
 #write ul.contains-task-list,
 #write .md-task-list,
@@ -652,6 +844,31 @@ li p.first {
     margin: 0.35em 0 0.45em;
 }
 
+/* ----- §60.3 已并入：任务列表嵌套/上下文终值 ----- */
+#write ul.contains-task-list,
+#write ul.task-list,
+#write .md-task-list {
+    list-style: none !important;
+    padding-left: 0.2em !important;
+    border-left: 0 !important;
+}
+#write li.md-task-list-item {
+    list-style: none !important;
+    padding-left: 1.7em !important;
+}
+#write li.md-task-list-item > ul,
+#write li.md-task-list-item > ol {
+    border-left: var(--nest-rail);
+    margin-left: 0.1em;
+    padding-left: 1.15em;
+}
+#write blockquote li.md-task-list-item,
+#write .md-alert li.md-task-list-item,
+#write details li.md-task-list-item {
+    padding-left: 1.65em !important;
+}
+#write li.md-task-list-item code { font-size: 0.88em; }
+
 /* ========== 19. Definition list  <dl><dt><dd>  ========== */
 dl, #write dl { margin: 0.9em 0; }
 dt, #write dt {
@@ -683,6 +900,35 @@ dd p { margin: 0.25em 0; }
 /* details + math in tables: see §24 / §50.11 (single source) */
 #write table .md-inline-math {
     font-size: 1em;
+}
+
+/* ----- §60.7 已并入：定义列表嵌套终值 ----- */
+#write dl {
+    margin: var(--nest-gap-lg) 0;
+}
+#write dt {
+    margin-top: 0.7rem;
+    font-weight: 700;
+    color: var(--accent-deep, var(--accent-color));
+    font-family: var(--font-ui);
+}
+#write dd {
+    margin: 0.25rem 0 0.5rem 0.2rem;
+    padding: 0.15rem 0 0.15rem 0.75rem;
+    border-left: 2px solid var(--border-color);
+    color: var(--control-text-color);
+}
+#write dd > p { margin: 0.25em 0; }
+#write dd > ul,
+#write dd > ol {
+    margin: 0.3em 0;
+    padding-left: 1.25em;
+}
+#write dd code { font-size: 0.88em; }
+#write dd .md-inline-math { font-size: 1em; }
+#write dd > .md-fences:not(.md-fences-advanced) {
+    margin: var(--nest-gap-sm) 0 !important;
+    font-size: var(--nest-code-scale) !important;
 }
 
 /* ========== 20. Horizontal rule  ---  ***  ___  ========== */
@@ -946,6 +1192,49 @@ table td .md-math-inline, table th .md-math-inline { font-size: 0.95em; }
     max-width: 100%;
     border-radius: var(--radius-md, 10px);
     -webkit-overflow-scrolling: touch;
+}
+
+/* ----- §60.6 已并入：嵌套上下文表格 + 单元格内联终值 ----- */
+#write li table,
+#write blockquote table,
+#write .md-alert table,
+#write details table,
+#write dd table {
+    width: auto !important;
+    max-width: 100%;
+    font-size: var(--nest-table-scale);
+}
+#write table th,
+#write table td {
+    word-break: break-word;
+}
+#write table th code,
+#write table td code {
+    font-size: 0.84em;
+    white-space: nowrap;
+}
+#write table th .md-inline-math,
+#write table td .md-inline-math,
+#write table th mjx-container,
+#write table td mjx-container {
+    font-size: 0.96em !important;
+}
+#write table th kbd,
+#write table td kbd {
+    font-size: 0.78em;
+    padding: 0.05em 0.28em;
+}
+#write table th img,
+#write table td img {
+    max-height: 6rem;
+    max-width: 100%;
+    vertical-align: middle;
+}
+#write table ul,
+#write table ol {
+    margin: 0.2em 0;
+    padding-left: 1.15em;
+    font-size: 0.95em;
 }
 
 /* ========== 22. Images  ![alt](src)  ========== */
@@ -1275,6 +1564,19 @@ details details > summary {
     max-width: 100%;
 }
 
+/* ----- §60.4 已并入：details 外间距（几何/交互仍以本节 v18 为准） ----- */
+#write details {
+    margin-top: var(--nest-gap-lg);
+    margin-bottom: var(--nest-gap-lg);
+}
+#write details details {
+    margin-top: var(--nest-gap-md);
+    margin-bottom: var(--nest-gap-md);
+}
+#write details pre {
+    font-size: var(--nest-code-scale);
+}
+
 /* ========== 25. Code fences  ```  (stock-CM friendly + isolate from diagrams) ========== */
 /*
  * NORMAL code fences must NEVER get diagram rules (transform/nowrap/wide card).
@@ -1396,6 +1698,17 @@ pre.md-fences:not(.md-fences-advanced) {
 #write .md-fences:not(.md-fences-advanced) .code-tooltip .ty-input {
     color: var(--pre-lang-color, var(--muted-text-color)) !important;
     font-weight: 600 !important;
+}
+/* ----- §60.12 已并入：嵌套围栏防几何漂移（仅非图示） ----- */
+#write blockquote .md-fences:not(.md-fences-advanced),
+#write li .md-fences:not(.md-fences-advanced),
+#write .md-alert .md-fences:not(.md-fences-advanced),
+#write details .md-fences:not(.md-fences-advanced),
+#write dd .md-fences:not(.md-fences-advanced) {
+    max-width: 100% !important;
+    transform: none !important;
+    zoom: 1 !important;
+    white-space: pre !important;
 }
 
 /* CodeMirror: backgrounds + token colors only */
@@ -1692,6 +2005,23 @@ pre.md-fences:not(.md-fences-advanced) {
     margin: 0.2em auto !important;
 }
 
+/* ----- §60.10 已并入：嵌套容器内数学密度终值 ----- */
+#write li .md-math-block,
+#write blockquote .md-math-block,
+#write .md-alert .md-math-block,
+#write details .md-math-block,
+#write dd .md-math-block {
+    margin: var(--nest-gap-sm) 0;
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--radius-sm, 6px);
+}
+#write li .md-inline-math,
+#write blockquote .md-inline-math,
+#write .md-alert .md-inline-math,
+#write details .md-inline-math {
+    font-size: var(--nest-math-scale) !important;
+}
+
 /* ========== 28. YAML front matter  ========== */
 /* §42 seam + §50.1 已并入为单一终值规则（!important 对抗 Typora 库存 meta 样式） */
 #write pre.md-meta-block,
@@ -1785,6 +2115,12 @@ pre.md-meta-block,
 #write .md-toc-h4 .md-toc-inner,
 #write .md-toc-h5 .md-toc-inner,
 #write .md-toc-h6 .md-toc-inner { opacity: 0.88; font-size: 0.96em; }
+/* §60.13 已并入：TOC/YAML 与正文节奏 */
+#write .md-toc + h1,
+#write .md-toc + h2,
+#write pre.md-meta-block + h1 {
+    margin-top: 1.25rem;
+}
 
 /* ========== 30. Footnotes  [^1]  ========== */
 /* 区域几何/配色终值在下方 §50.6 折叠块（!important） */
@@ -1841,6 +2177,20 @@ sup.md-footnote:hover { color: var(--accent-hover) !important; }
     margin-left: 0.25em;
 }
 #write .footnote-line .reversefootnote:hover { text-decoration: underline; }
+/* ----- §60.9/§60.11 已并入：嵌套上下文中的脚注角标 ----- */
+#write sup.md-footnote code {
+    font-size: inherit;
+    padding: 0;
+    background: transparent;
+    border: 0;
+}
+#write blockquote sup.md-footnote,
+#write li sup.md-footnote,
+#write .md-alert sup.md-footnote,
+#write table sup.md-footnote,
+#write details sup.md-footnote {
+    font-size: 0.7em !important;
+}
 a.footnote-backref, .footnote-backref {
     color: var(--accent-color);
     text-decoration: none;
@@ -1881,7 +2231,6 @@ a.footnote-backref, .footnote-backref {
     --alert-wash: var(--accent-soft);
     --alert-border: var(--border-soft);
     position: relative;
-    margin: 1rem 0;
     color: var(--text-color);
     box-shadow: var(--shadow-card);
 }
@@ -1992,6 +2341,46 @@ a.footnote-backref, .footnote-backref {
 #write .md-alert-text-important { color: var(--alert-important-label); }
 #write .md-alert-text-warning { color: var(--alert-warning-label); }
 #write .md-alert-text-caution { color: var(--alert-caution-label); }
+/* ----- §60.5 已并入：Alert 外距终值（!important）+ 内嵌内容韵律 ----- */
+#write .md-alert {
+    margin: var(--nest-gap-lg) 0 !important;
+}
+#write .md-alert ul,
+#write .md-alert ol {
+    margin: var(--nest-gap-sm) 0;
+    padding-left: 1.3em;
+}
+#write .md-alert .md-fences:not(.md-fences-advanced) {
+    margin: var(--nest-gap-sm) 0 !important;
+    font-size: var(--nest-code-scale) !important;
+}
+#write .md-alert table,
+#write .md-alert .md-table-fig {
+    margin: var(--nest-gap-sm) 0;
+    font-size: var(--nest-table-scale);
+    width: auto;
+    max-width: 100%;
+}
+#write .md-alert blockquote {
+    margin: var(--nest-gap-sm) 0;
+    background: transparent;
+    border-left-color: var(--alert-accent, var(--accent-color));
+}
+#write .md-alert details {
+    margin: var(--nest-gap-sm) 0;
+    box-shadow: none;
+}
+#write .md-alert .md-math-block {
+    margin: var(--nest-gap-sm) 0;
+    padding: 0.5rem 0.7rem;
+    background: var(--elevated-bg);
+}
+/* Alert 套 Alert：内层更克制 */
+#write .md-alert .md-alert {
+    margin: var(--nest-gap-sm) 0 !important;
+    box-shadow: none !important;
+    padding: 0.55rem 0.8rem 0.65rem 0.9rem !important;
+}
 /* ========== 32. Ruby  <ruby><rt>  ========== */
 /* Ruby only. Other semantic inlines: kbd §13 · samp/var §14 · abbr/cite/q/dfn/time/small §15 · emoji §34 */
 ruby, #write ruby {
@@ -2006,6 +2395,11 @@ rt, #write rt {
     opacity: 0.85;
 }
 rp, #write rp { color: var(--muted-text-color); }
+/* §60.14 已并入：嵌套上下文 ruby rt */
+#write blockquote ruby rt,
+#write li ruby rt {
+    font-size: 0.62em;
+}
 
 /* ========== 33. HTML blocks / misc semantic ========== */
 address, #write address {
@@ -2466,6 +2860,23 @@ header, .context-menu, .megamenu-content, footer { font-family: var(--font-ui); 
         page-break-inside: avoid;
         box-shadow: none !important;
     }
+    /* §60.16 已并入：打印嵌套层级 */
+    #write blockquote {
+        background: transparent !important;
+        border-left: 2pt solid #c4c2ba !important;
+    }
+    #write details {
+        border: 1px solid #d4d2ca !important;
+        background: #faf9f5 !important;
+    }
+    #write .md-alert {
+        box-shadow: none !important;
+        break-inside: avoid;
+    }
+    #write li > ul,
+    #write li > ol {
+        border-left-color: #e0ddd4 !important;
+    }
 }
 
 
@@ -2619,18 +3030,7 @@ header, .context-menu, .megamenu-content, footer { font-family: var(--font-ui); 
 #write ul ul ul { list-style-type: square; }
 
 #write li.md-list-item.md-focus { outline: none; }
-/* loose list: space between items with multi-p */
-#write li > p + p {
-    margin-top: 0.45em;
-    color: var(--control-text-color);
-}
-#write li > .md-fences:not(.md-fences-advanced) {
-    margin: 0.5em 0;
-}
-#write li > table {
-    margin: 0.5em 0;
-    font-size: 0.92em;
-}
+/* （li>p+p / li>码 / li>表 的旧值已被 §17 的 §60.2 折叠块终裁 → 删） */
 
 /* ----- Task list polish ----- */
 #write li.md-task-list-item.task-list-done > p,
@@ -2645,10 +3045,7 @@ header, .context-menu, .megamenu-content, footer { font-family: var(--font-ui); 
 #write li.md-task-list-item ul.task-list {
     margin-top: 0.35em;
 }
-/* task in blockquote */
-#write blockquote ul.contains-task-list {
-    padding-left: 0.15em;
-}
+/* （引用内任务列表缩进旧值已被 §18 的 §60.3 折叠块 !important 压死 → 删） */
 
 /* ----- HR variants ----- */
 #write hr {
@@ -2737,22 +3134,9 @@ header, .context-menu, .megamenu-content, footer { font-family: var(--font-ui); 
 #write .footnotes p { margin: 0.25em 0; }
 
 /* ----- Alerts: nested list/code/table/blockquote ----- */
-#write .md-alert > :first-child { margin-top: 0.1em; }
-#write .md-alert > :last-child { margin-bottom: 0.1em; }
-#write .md-alert ul,
-#write .md-alert ol {
-    margin: 0.4em 0;
-    padding-left: 1.35em;
-}
-#write .md-alert .md-fences:not(.md-fences-advanced) {
-    margin: 0.55em 0;
-    font-size: 0.88em;
-}
-#write .md-alert blockquote {
-    margin: 0.5em 0;
-    background: transparent;
-}
-#write .md-alert p { margin: 0.35em 0; line-height: 1.6; }
+/* （first/last 挤压、内嵌列表/码/引用间距已被 §31 折叠块（§60.5/§70.11）终裁 → 删；
+    p 外距 .35em 为活值保留，line-height 终值 1.65 见 §70.11） */
+#write .md-alert p { margin: 0.35em 0; }
 
 /* ----- Code fence language bar feel (tooltip only, no CM geometry) ----- */
 #write .md-fences:not(.md-fences-advanced) {
@@ -2837,454 +3221,11 @@ header, .context-menu, .megamenu-content, footer { font-family: var(--font-ui); 
    活值就地并入原节；被 §60/§70/§91 压死的规则已删除。
    ============================================================ */
 /* ============================================================
-   §60  v17 NESTED ELEGANCE — 全标签 × 深层嵌套统一韵律
-   目标：任意组合嵌套仍优雅、可读、可点选，不打架。
-   原则：只调 chrome/间距/层级；不碰 CM 几何 / MathJax 布局 /
-         Mermaid 节点字号（见 §26 v16）。
+   §60 v17 NESTED ELEGANCE — 已全部折叠（v40 重构）：
+   nest token → 顶部 :root；60.1→§16 · 60.2→§17 · 60.3→§18 · 60.4→§24 ·
+   60.5→§31 · 60.6→§21 · 60.7→§19 · 60.8→§3 · 60.9→§12/§30 · 60.10→§27 ·
+   60.11→§30 · 60.12→§25 · 60.13→§29 · 60.14→§13/§32 · 60.15→§2 · 60.16→§40
    ============================================================ */
-
-:root {
-    /* 嵌套韵律刻度 */
-    --nest-gap-xs: 0.28em;
-    --nest-gap-sm: 0.4em;
-    --nest-gap-md: 0.55em;
-    --nest-gap-lg: 0.75em;
-    --nest-indent: 1.2em;
-    --nest-rail: 1px solid var(--border-soft);
-    --nest-rail-accent: 2px solid var(--accent-color);
-    --nest-soft-bg: var(--meta-bg, #f0eee6);
-    --nest-code-scale: 0.9em;
-    --nest-table-scale: 0.9em;
-    --nest-math-scale: 0.98em;
-}
-
-/* ----- 60.1 深层引用 1–6：渐弱左边 + 渐浅底，不糊成一团 ----- */
-#write blockquote {
-    border-left-width: 3px;
-    border-left-style: solid;
-    border-left-color: var(--quote-border-color, var(--border-color));
-    background: linear-gradient(90deg, var(--accent-softer), transparent 68%);
-    padding: 0.35rem 0.15rem 0.35rem 0.95rem;
-    margin: var(--nest-gap-lg) 0;
-    color: var(--quote-text-color, var(--control-text-color));
-}
-#write blockquote blockquote {
-    margin: var(--nest-gap-sm) 0;
-    padding-left: 0.85rem;
-    border-left-color: var(--accent-color);
-    background: linear-gradient(90deg, var(--accent-softer), transparent 55%);
-    opacity: 1;
-}
-#write blockquote blockquote blockquote {
-    border-left-color: var(--border-strong);
-    background: linear-gradient(90deg, var(--border-soft), transparent 50%);
-}
-#write blockquote blockquote blockquote blockquote {
-    border-left-width: 2px;
-    border-left-color: var(--muted-text-color);
-    background: transparent;
-    opacity: 0.97;
-}
-#write blockquote blockquote blockquote blockquote blockquote {
-    border-left-width: 2px;
-    border-left-style: dashed;
-    border-left-color: var(--border-color);
-    opacity: 0.95;
-}
-#write blockquote blockquote blockquote blockquote blockquote blockquote {
-    border-left-style: dotted;
-    opacity: 0.93;
-}
-#write blockquote > :first-child { margin-top: 0.1em !important; }
-#write blockquote > :last-child { margin-bottom: 0.1em !important; }
-
-/* 引用内：列表 / 任务 / 表 / 码 / 公式 / Alert / details */
-#write blockquote ul,
-#write blockquote ol {
-    margin: var(--nest-gap-sm) 0;
-    padding-left: 1.35em;
-}
-#write blockquote li { margin: 0.12em 0; line-height: 1.6; }
-#write blockquote .md-fences:not(.md-fences-advanced),
-#write blockquote pre.md-fences:not(.md-fences-advanced) {
-    margin: var(--nest-gap-md) 0 !important;
-    font-size: var(--nest-code-scale) !important;
-}
-#write blockquote table,
-#write blockquote .md-table-fig {
-    margin: var(--nest-gap-md) 0;
-    font-size: var(--nest-table-scale);
-    width: auto;
-    max-width: 100%;
-}
-#write blockquote .md-math-block,
-#write blockquote .mathjax-block {
-    margin: var(--nest-gap-md) 0;
-    padding: 0.55rem 0.75rem;
-    font-size: 0.95em;
-}
-#write blockquote .md-inline-math { font-size: var(--nest-math-scale); }
-#write blockquote .md-alert {
-    margin: var(--nest-gap-md) 0 !important;
-    box-shadow: none !important;
-}
-#write blockquote details {
-    margin: var(--nest-gap-md) 0;
-    background: var(--elevated-bg, #fffcf7);
-}
-#write blockquote hr {
-    margin: 0.85em 0;
-    opacity: 0.7;
-}
-
-/* ----- 60.2 列表 6 层：缩进轨 + marker 循环，混排不塌 ----- */
-#write ul,
-#write ol {
-    margin: var(--nest-gap-md) 0;
-    padding-left: 1.55em;
-}
-#write li > ul,
-#write li > ol {
-    margin: var(--nest-gap-xs) 0 var(--nest-gap-sm);
-    padding-left: var(--nest-indent);
-    border-left: var(--nest-rail);
-}
-/* 深层列表：几乎不缩字号（CDP：6–7 层曾叠到 ~14px，略影响可读） */
-#write li li li li { font-size: 0.995em; }
-#write li li li li li { font-size: 0.995em; }
-#write li li li li li li { font-size: 0.99em; }
-
-/* 列表项内块：码 / 表 / 引用 / 公式 / details / alert */
-#write li > .md-fences:not(.md-fences-advanced),
-#write li > pre.md-fences:not(.md-fences-advanced) {
-    margin: var(--nest-gap-sm) 0 !important;
-    font-size: var(--nest-code-scale) !important;
-    max-width: 100%;
-}
-#write li > table,
-#write li > .md-table-fig {
-    margin: var(--nest-gap-sm) 0;
-    font-size: var(--nest-table-scale);
-    width: auto;
-    max-width: 100%;
-}
-#write li > blockquote {
-    margin: var(--nest-gap-sm) 0;
-    padding-left: 0.75rem;
-}
-#write li > .md-math-block,
-#write li > .mathjax-block {
-    margin: var(--nest-gap-sm) 0;
-    padding: 0.5rem 0.7rem;
-}
-#write li > .md-alert {
-    margin: var(--nest-gap-sm) 0 !important;
-    box-shadow: none !important;
-}
-#write li > details {
-    margin: var(--nest-gap-sm) 0;
-}
-/* 松散列表多段 */
-#write li > p + p {
-    margin-top: 0.4em;
-    color: var(--control-text-color);
-}
-/* 混排 ol⊃ul / ul⊃ol */
-#write ol > li > ul,
-#write ul > li > ol {
-    margin-top: var(--nest-gap-xs);
-}
-
-/* ----- 60.3 任务列表：嵌套 + 引用 + Alert 内 ----- */
-#write ul.contains-task-list,
-#write ul.task-list,
-#write .md-task-list {
-    list-style: none !important;
-    padding-left: 0.2em !important;
-    border-left: 0 !important;
-}
-#write li.md-task-list-item {
-    list-style: none !important;
-    padding-left: 1.7em !important;
-}
-#write li.md-task-list-item > ul,
-#write li.md-task-list-item > ol {
-    border-left: var(--nest-rail);
-    margin-left: 0.1em;
-    padding-left: 1.15em;
-}
-#write blockquote li.md-task-list-item,
-#write .md-alert li.md-task-list-item,
-#write details li.md-task-list-item {
-    padding-left: 1.65em !important;
-}
-#write li.md-task-list-item .md-inline-math { font-size: 1em; }
-#write li.md-task-list-item code { font-size: 0.88em; }
-
-/* ----- 60.4 Details：几何/交互一律以 §24 v18 为准，这里只调外间距 ----- */
-#write details {
-    margin-top: var(--nest-gap-lg);
-    margin-bottom: var(--nest-gap-lg);
-}
-#write details details {
-    margin-top: var(--nest-gap-md);
-    margin-bottom: var(--nest-gap-md);
-}
-#write details pre {
-    font-size: var(--nest-code-scale);
-}
-
-/* ----- 60.5 GFM Alert 五色 × 内嵌 ----- */
-#write .md-alert {
-    margin: var(--nest-gap-lg) 0 !important;
-    border-radius: 0 var(--radius-md) var(--radius-md) 0 !important;
-}
-#write .md-alert ul,
-#write .md-alert ol {
-    margin: var(--nest-gap-sm) 0;
-    padding-left: 1.3em;
-}
-#write .md-alert .md-fences:not(.md-fences-advanced) {
-    margin: var(--nest-gap-sm) 0 !important;
-    font-size: var(--nest-code-scale) !important;
-}
-#write .md-alert table,
-#write .md-alert .md-table-fig {
-    margin: var(--nest-gap-sm) 0;
-    font-size: var(--nest-table-scale);
-    width: auto;
-    max-width: 100%;
-}
-#write .md-alert blockquote {
-    margin: var(--nest-gap-sm) 0;
-    background: transparent;
-    border-left-color: var(--alert-accent, var(--accent-color));
-}
-#write .md-alert details {
-    margin: var(--nest-gap-sm) 0;
-    box-shadow: none;
-}
-#write .md-alert .md-math-block {
-    margin: var(--nest-gap-sm) 0;
-    padding: 0.5rem 0.7rem;
-    background: var(--elevated-bg);
-}
-/* Alert 套 Alert：内层更克制 */
-#write .md-alert .md-alert {
-    margin: var(--nest-gap-sm) 0 !important;
-    box-shadow: none !important;
-    padding: 0.55rem 0.8rem 0.65rem 0.9rem !important;
-}
-
-/* ----- 60.6 表格：嵌套上下文 + 单元格内联 ----- */
-#write li table,
-#write blockquote table,
-#write .md-alert table,
-#write details table,
-#write dd table {
-    width: auto !important;
-    max-width: 100%;
-    font-size: var(--nest-table-scale);
-}
-#write table th,
-#write table td {
-    /* 单元格内行内元素对齐 */
-    word-break: break-word;
-}
-#write table th code,
-#write table td code {
-    font-size: 0.84em;
-    white-space: nowrap;
-}
-#write table th .md-inline-math,
-#write table td .md-inline-math,
-#write table th mjx-container,
-#write table td mjx-container {
-    font-size: 0.96em !important;
-}
-#write table th kbd,
-#write table td kbd {
-    font-size: 0.78em;
-    padding: 0.05em 0.28em;
-}
-#write table th img,
-#write table td img {
-    max-height: 6rem;
-    max-width: 100%;
-    vertical-align: middle;
-}
-/* 表格内列表（HTML / 软换行） */
-#write table ul,
-#write table ol {
-    margin: 0.2em 0;
-    padding-left: 1.15em;
-    font-size: 0.95em;
-}
-
-/* ----- 60.7 定义列表 × 嵌套 ----- */
-#write dl {
-    margin: var(--nest-gap-lg) 0;
-}
-#write dt {
-    margin-top: 0.7rem;
-    font-weight: 700;
-    color: var(--accent-deep, var(--accent-color));
-    font-family: var(--font-ui);
-}
-#write dd {
-    margin: 0.25rem 0 0.5rem 0.2rem;
-    padding: 0.15rem 0 0.15rem 0.75rem;
-    border-left: 2px solid var(--border-color);
-    color: var(--control-text-color);
-}
-#write dd > p { margin: 0.25em 0; }
-#write dd > ul,
-#write dd > ol {
-    margin: 0.3em 0;
-    padding-left: 1.25em;
-}
-#write dd code { font-size: 0.88em; }
-#write dd .md-inline-math { font-size: 1em; }
-#write dd > .md-fences:not(.md-fences-advanced) {
-    margin: var(--nest-gap-sm) 0 !important;
-    font-size: var(--nest-code-scale) !important;
-}
-
-/* ----- 60.8 标题内行内：code / math / mark / link ----- */
-#write h1 code, #write h2 code, #write h3 code,
-#write h4 code, #write h5 code, #write h6 code {
-    font-size: 0.82em;
-    font-weight: 500;
-    padding: 0.05em 0.35em;
-    vertical-align: baseline;
-}
-#write h1 .md-inline-math, #write h2 .md-inline-math,
-#write h3 .md-inline-math, #write h4 .md-inline-math {
-    font-size: 0.92em !important;
-}
-#write h1 a, #write h2 a, #write h3 a,
-#write h4 a, #write h5 a, #write h6 a {
-    text-decoration: none;
-    border-bottom: 1px solid var(--link-underline, rgba(0,0,0,.2));
-}
-#write h1 a:hover, #write h2 a:hover, #write h3 a:hover {
-    color: var(--accent-color);
-    border-bottom-color: var(--accent-color);
-}
-#write h1 mark, #write h2 mark, #write h3 mark {
-    padding: 0.05em 0.25em;
-}
-
-/* ----- 60.9 行内组合：强调栈不脏 ----- */
-#write strong code,
-#write em code,
-#write mark code,
-#write del code {
-    font-size: 0.9em;
-}
-#write a code {
-    color: inherit;
-    text-decoration: none;
-}
-#write a:hover code {
-    color: var(--accent-color);
-}
-#write sup.md-footnote code {
-    font-size: inherit;
-    padding: 0;
-    background: transparent;
-    border: 0;
-}
-
-/* ----- 60.10 数学：嵌套容器密度 ----- */
-#write li .md-math-block,
-#write blockquote .md-math-block,
-#write .md-alert .md-math-block,
-#write details .md-math-block,
-#write dd .md-math-block {
-    margin: var(--nest-gap-sm) 0;
-    padding: 0.5rem 0.75rem;
-    border-radius: var(--radius-sm, 6px);
-}
-#write li .md-inline-math,
-#write blockquote .md-inline-math,
-#write .md-alert .md-inline-math,
-#write details .md-inline-math {
-    font-size: var(--nest-math-scale) !important;
-}
-
-/* ----- 60.11 脚注引用出现在嵌套中 ----- */
-#write blockquote sup.md-footnote,
-#write li sup.md-footnote,
-#write .md-alert sup.md-footnote,
-#write table sup.md-footnote,
-#write details sup.md-footnote {
-    font-size: 0.7em !important;
-}
-
-/* ----- 60.12 代码围栏：仅非图示，嵌套安全 ----- */
-#write blockquote .md-fences:not(.md-fences-advanced),
-#write li .md-fences:not(.md-fences-advanced),
-#write .md-alert .md-fences:not(.md-fences-advanced),
-#write details .md-fences:not(.md-fences-advanced),
-#write dd .md-fences:not(.md-fences-advanced) {
-    max-width: 100% !important;
-    transform: none !important;
-    zoom: 1 !important;
-    white-space: pre !important;
-}
-
-/* 嵌套 mermaid：勿再给 preview 设 zoom（会与 §26 panel zoom 叠乘/抵消） */
-/* 嵌套缩放见 §26：.md-diagram-panel { zoom: nested } */
-
-/* ----- 60.13 TOC / YAML 与正文节奏 ----- */
-#write .md-toc + h1,
-#write .md-toc + h2,
-#write pre.md-meta-block + h1 {
-    margin-top: 1.25rem;
-}
-
-/* ----- 60.14 Ruby / kbd / samp 在嵌套 ----- */
-#write blockquote kbd,
-#write li kbd,
-#write table kbd,
-#write .md-alert kbd {
-    font-size: 0.8em;
-}
-#write blockquote ruby rt,
-#write li ruby rt {
-    font-size: 0.62em;
-}
-
-/* ----- 60.15 选区 / 焦点：嵌套块内一致 ----- */
-#write blockquote ::selection,
-#write details ::selection,
-#write .md-alert ::selection,
-#write li ::selection {
-    background-color: var(--select-text-bg-color);
-}
-
-/* ----- 60.16 打印：嵌套不丢层级感 ----- */
-@media print {
-    #write blockquote {
-        background: transparent !important;
-        border-left: 2pt solid #c4c2ba !important;
-    }
-    #write details {
-        border: 1px solid #d4d2ca !important;
-        background: #faf9f5 !important;
-    }
-    #write .md-alert {
-        box-shadow: none !important;
-        break-inside: avoid;
-    }
-    #write li > ul,
-    #write li > ol {
-        border-left-color: #e0ddd4 !important;
-    }
-}
-
-/* end §60 v17 nested elegance */
 
 /* ============================================================
    §70  v20  MD RENDER SYNTHESIS
