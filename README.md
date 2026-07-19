@@ -2,7 +2,7 @@
 
 纯 Claude 聊天气质的 Typora 主题：暖奶油纸 · 珊瑚点缀 · 双脚本字体。
 
-<img src="screenshots/claude-ember-light.png" alt="Claude Like Theme" width="640">
+<img src="https://raw.githubusercontent.com/WJH-makers/typora-theme-claude-like/main/screenshots/claude-ember-light.png" alt="Claude Like Theme" width="640">
 
 ## 安装
 
@@ -38,3 +38,4 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1
 ## 许可
 
 CSS：MIT · Noto Serif SC：SIL · Anthropic 字体：仅随主题本地使用
+
