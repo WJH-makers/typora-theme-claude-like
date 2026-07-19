@@ -356,6 +356,22 @@ a:hover, #write a:hover {
     font-size: 0.9em;
     word-break: break-all;
 }
+/* §91.11 已并入：链接色终裁（陶土深色 + 悬停亮陶土 + visited 不发紫） */
+#write a {
+    color: var(--accent-deep, #b55320);
+    text-decoration-color: var(--link-underline, rgba(181, 83, 32, 0.38));
+}
+#write a:hover,
+#write a:focus {
+    color: var(--accent-color, #d97757);
+    text-decoration-color: var(--accent-color, #d97757);
+}
+#write a:visited {
+    color: var(--accent-deep, #b55320);
+}
+#write a[href^="#"] {
+    color: var(--control-text-color, #5c5a55);
+}
 
 /* internal / anchor */
 #write a[href^="#"] {
@@ -395,6 +411,7 @@ del, s, strike, #write del, #write s, #write strike {
 }
 
 /* ========== 8. Highlight  ==mark==  <mark>  ========== */
+/* UI 内裸 mark 维持渐变下划式；正文终值（§91.2 平铺洗色）见下方 #write 规则 */
 mark, #write mark,
 span[md-inline="highlight"] mark,
 .md-pair-s mark {
@@ -404,6 +421,13 @@ span[md-inline="highlight"] mark,
     border-radius: 1px;
     box-decoration-break: clone;
     -webkit-box-decoration-break: clone;
+}
+/* §91.2 已并入：正文高亮可见（与纸底区分） */
+#write mark {
+    background: var(--mark-wash, rgba(217, 119, 87, 0.28));
+    color: var(--text-color);
+    border-radius: 0.2em;
+    padding: 0.05em 0.2em;
 }
 
 /* ========== 9. Underline  <u>  ========== */
@@ -494,6 +518,11 @@ kbd, #write kbd {
 #write table kbd,
 #write .md-alert kbd {
     font-size: 0.8em;
+}
+/* §91.4 已并入：kbd 边框在部分合成路径下 shorthand 为空 → 强制可见 */
+#write kbd {
+    border: 1px solid var(--kbd-border, #d4d2ca) !important;
+    border-bottom-width: 2px !important;
 }
 
 /* ========== 14. Samp / Var  <samp> <var>  ========== */
@@ -670,6 +699,11 @@ blockquote footer, blockquote cite {
     padding: 0.35rem 0 0.35rem 1rem;
     color: var(--quote-text-color, var(--control-text-color));
     border-left: 0.25em solid var(--quote-border-color, var(--border-color));
+}
+/* §91.10 已并入：二层引用左边线终裁 + 微缩进 */
+#write blockquote blockquote {
+    border-left-color: var(--accent-color);
+    margin-left: 0.15em;
 }
 
 /* ========== 17. Lists  - * +  1.  nested  (fixed) ========== */
@@ -959,6 +993,17 @@ li p.first {
     color: var(--muted-text-color);
     text-decoration: line-through;
     text-decoration-color: var(--border-strong);
+}
+/* §91.5 已并入：完成态更明显（li 色 + 划线不透明度终值） */
+#write li.md-task-list-item.task-list-done,
+#write li.md-task-list-item.md-task-list-item-checked {
+    color: var(--control-text-color);
+}
+#write li.md-task-list-item.task-list-done > p,
+#write li.md-task-list-item.md-task-list-item-checked > p {
+    text-decoration: line-through;
+    text-decoration-color: var(--border-strong, rgba(31, 30, 29, 0.28));
+    opacity: 0.72;
 }
 
 /* ========== 19. Definition list  <dl><dt><dd>  ========== */
@@ -1369,6 +1414,15 @@ table td .md-math-inline, table th .md-math-inline { font-size: 0.95em; }
 #write table tbody tr:hover td {
     background: var(--table-hover-color, var(--accent-softer));
 }
+/* §91.3 已并入：表头与网格更清晰（对 md-table 由 §50.4 块高特异性接管，
+   此处生效面 = 无 .md-table 的原生 HTML 表格） */
+#write table th {
+    background: var(--table-header-bg, #f0eee6);
+    border-bottom: 1.5px solid var(--table-border-strong-color, rgba(31, 30, 29, 0.28));
+}
+#write table td {
+    border-bottom: 1px solid var(--table-row-border-color, rgba(31, 30, 29, 0.1));
+}
 
 /* ========== 22. Images  ![alt](src)  ========== */
 img, #write img {
@@ -1461,6 +1515,16 @@ figcaption, #write figure > figcaption,
     font-family: var(--font-ui);
     font-size: 0.8rem;
     color: var(--muted-text-color);
+}
+/* §91.12 已并入：失败图片终裁 —— Typora 可能把 display:none 打在 span 上，再抬一次 */
+#write span.md-image.md-img-error,
+#write .md-image.md-img-error {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    min-height: 4.5rem !important;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 /* ========== 23. Video / Audio / Iframe  ========== */
@@ -1719,6 +1783,17 @@ details details > summary {
 }
 #write details pre {
     font-size: var(--nest-code-scale);
+}
+/* §91.8 已并入：空 details（无 summary）仍保留可辨认卡片，避免「空白灰块」 */
+#write details:not(:has(> summary)) {
+    border-left-color: var(--border-color);
+    color: var(--muted-text-color);
+    font-style: italic;
+}
+#write details:not(:has(> summary))::before {
+    content: "(无摘要的折叠块)";
+    font-size: 0.85rem;
+    font-family: var(--font-ui);
 }
 
 /* ========== 25. Code fences  ```  (stock-CM friendly + isolate from diagrams) ========== */
@@ -2321,6 +2396,12 @@ pre.md-fences:not(.md-fences-advanced) {
 #write details .md-inline-math {
     font-size: var(--nest-math-scale) !important;
 }
+/* §91.9 已并入：公式块外距/内距终值 */
+#write .md-math-block,
+#write .mathjax-block {
+    margin: 1.1em 0;
+    padding: 0.75rem 1rem;
+}
 
 /* ========== 28. YAML front matter  ========== */
 /* §42 seam + §50.1 已并入为单一终值规则（!important 对抗 Typora 库存 meta 样式） */
@@ -2423,6 +2504,10 @@ pre.md-meta-block,
 }
 /* §70.12 已并入：TOC 行高（其余排印被 §50.2 !important 终裁） */
 #write .md-toc { line-height: 1.55; }
+/* §91.7 已并入：TOC 条目缺省色（inner 锚点仍由 §50.2 折叠块 !important 接管） */
+#write .md-toc-item {
+    color: var(--accent-deep, #b55320);
+}
 
 /* ========== 30. Footnotes  [^1]  ========== */
 /* 区域几何/配色终值在下方 §50.6 折叠块（!important） */
@@ -3329,10 +3414,8 @@ header, .context-menu, .megamenu-content, footer { font-family: var(--font-ui); 
 #write del code {
     opacity: 0.85;
 }
-#write mark code {
-    background: transparent;
-    border-color: transparent;
-}
+/* （#write mark code 的透明化在原始层序中被 §91.1 同特异性后位规则全压 → 删；
+    mark 内 code 维持 §12 内联码样式即原渲染） */
 
 /* ----- Blockquote + nested content ----- */
 /* （引用内列表/码/表间距与 first/last 挤压、li>blockquote —— 全部被 §60.1/§60.2 终裁 → 删） */
@@ -3405,14 +3488,10 @@ header, .context-menu, .megamenu-content, footer { font-family: var(--font-ui); 
 /* Details chrome: only §24 (duplicates removed — they broke nested code) */
 
 /* ----- Math block as soft panel ----- */
-/* 底色/边框/圆角由 §27 的 --math-block-* token 终裁（原本被 §50.8 压死，勿在此重设） */
+/* 外距/内距/居中/横滚均由 §27 折叠块（§91.9 等）终裁；此处仅剩活值 box-shadow */
 #write .md-math-block,
 #write .mathjax-block {
-    margin: 1.15em 0;
-    padding: 0.85rem 1rem;
     box-shadow: var(--shadow-card);
-    text-align: center;
-    overflow-x: auto;
 }
 #write .md-inline-math {
     /* §70.13 终值 */
@@ -3471,8 +3550,9 @@ header, .context-menu, .megamenu-content, footer { font-family: var(--font-ui); 
 }
 
 /* ----- HTML block wrappers ----- */
+/* 数学块也带 .md-rawblock —— 其外距由 §27 折叠块（§91.9）终裁，此处排除 */
 #write .md-htmlblock,
-#write .md-rawblock {
+#write .md-rawblock:not(.md-math-block):not(.mathjax-block) {
     margin: 0.85em 0;
 }
 #write .md-htmlblock-container {
@@ -3535,131 +3615,11 @@ header, .context-menu, .megamenu-content, footer { font-family: var(--font-ui); 
    ============================================================ */
 
 /* ============================================================
-   §91  CDP 全标签审计补丁 v34
-   依据：typora-md-audit / typora-deep-audit 实测
+   §91 CDP 审计补丁 v34 — 已全部折叠（v40 重构）：
+   91.2→§8 · 91.3→§21 · 91.4→§13 · 91.5→§18 · 91.7→§29 · 91.8→§24 ·
+   91.9→§27 · 91.10→§16 · 91.11→§5 · 91.12→§22；
+   91.1（行内 code 重申）与 91.6（脚注区，被 §50.6 !important 全压）为死规则已删
    ============================================================ */
-
-/* 91.1 行内 code 底色更实一点，避免半透明对比度误读 */
-#write p code,
-#write li code,
-#write td code,
-#write th code,
-#write blockquote code {
-    background-color: var(--inline-code-bg-color);
-    border: 1px solid var(--inline-code-border-color);
-}
-
-/* 91.2 mark 高亮可见（与纸底区分） */
-#write mark {
-    background: var(--mark-wash, rgba(217, 119, 87, 0.28));
-    color: var(--text-color);
-    border-radius: 0.2em;
-    padding: 0.05em 0.2em;
-}
-
-/* 91.3 表格：表头与网格更清晰（窄表也有结构感） */
-#write table th {
-    background: var(--table-header-bg, #f0eee6);
-    border-bottom: 1.5px solid var(--table-border-strong-color, rgba(31, 30, 29, 0.28));
-}
-#write table td {
-    border-bottom: 1px solid var(--table-row-border-color, rgba(31, 30, 29, 0.1));
-}
-
-/* 91.4 kbd 边框在部分合成路径下 shorthand 为空 → 强制可见 */
-#write kbd {
-    border: 1px solid var(--kbd-border, #d4d2ca) !important;
-    border-bottom-width: 2px !important;
-}
-
-/* 91.5 任务列表：完成态更明显 */
-#write li.md-task-list-item.task-list-done,
-#write li.md-task-list-item.md-task-list-item-checked {
-    color: var(--control-text-color);
-}
-#write li.md-task-list-item.task-list-done > p,
-#write li.md-task-list-item.md-task-list-item-checked > p {
-    text-decoration: line-through;
-    text-decoration-color: var(--border-strong, rgba(31, 30, 29, 0.28));
-    opacity: 0.72;
-}
-
-/* 91.6 脚注区：与正文区隔 */
-#write .footnotes,
-#write .footnotes-area {
-    margin-top: 2.2rem;
-    padding-top: 1rem;
-    border-top: 1px solid var(--border-soft);
-    font-size: 0.9rem;
-    color: var(--control-text-color);
-}
-
-/* 91.7 TOC */
-#write .md-toc {
-    background: var(--meta-bg, #f0eee6);
-    border: 1px solid var(--border-soft);
-    border-radius: var(--radius-md, 10px);
-    padding: 0.85rem 1.1rem;
-    margin: 1.2em 0;
-}
-#write .md-toc-item {
-    color: var(--accent-deep, #b55320);
-}
-
-/* 91.8 空 details（无 summary）仍保留可辨认卡片，避免「空白灰块」 */
-#write details:not(:has(> summary)) {
-    border-left-color: var(--border-color);
-    color: var(--muted-text-color);
-    font-style: italic;
-}
-#write details:not(:has(> summary))::before {
-    content: "(无摘要的折叠块)";
-    font-size: 0.85rem;
-    font-family: var(--font-ui);
-}
-
-/* 91.9 公式块：居中感 + 与正文间距 */
-#write .md-math-block,
-#write .mathjax-block {
-    margin: 1.1em 0;
-    padding: 0.75rem 1rem;
-}
-
-/* 91.10 引用嵌套左边线层次 */
-#write blockquote blockquote {
-    border-left-color: var(--accent-color);
-    margin-left: 0.15em;
-}
-
-/* 91.11 链接终裁（压过 §70.3 旧「正文色链接」） */
-#write a {
-    color: var(--accent-deep, #b55320);
-    text-decoration-color: var(--link-underline, rgba(181, 83, 32, 0.38));
-}
-#write a:hover,
-#write a:focus {
-    color: var(--accent-color, #d97757);
-    text-decoration-color: var(--accent-color, #d97757);
-}
-#write a:visited {
-    color: var(--accent-deep, #b55320);
-}
-#write a[href^="#"] {
-    color: var(--control-text-color, #5c5a55);
-}
-
-/* 91.12 失败图片：Typora 可能把 display:none 打在 span 上，再抬一次 */
-#write span.md-image.md-img-error,
-#write .md-image.md-img-error {
-    display: flex !important;
-    align-items: center;
-    justify-content: center;
-    min-height: 4.5rem !important;
-    width: 100%;
-    box-sizing: border-box;
-}
-
-/* end §91 */
 
 /* ============================================================
    §92  SHOWCASE / 炫酷模式（调研落地 · 验收 §18）
