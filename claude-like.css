@@ -144,6 +144,12 @@
     --alert-caution-bg-soft: rgba(180, 95, 81, 0.04);
     --alert-caution-wash: rgba(180, 95, 81, 0.12);
     --alert-caution-border: rgba(180, 95, 81, 0.22);
+    /* Alert 标签文字：light 浅底需更深语义色保证 AA 对比度 */
+    --alert-note-label: #3d6f9e;
+    --alert-tip-label: #4a6b42;
+    --alert-important-label: #6b4f7a;
+    --alert-warning-label: #8a5a20;
+    --alert-caution-label: #8f4035;
 
     /*
      * Dual-script cascade (CDP-fixed):

@@ -20,6 +20,12 @@
     --code-border-color: rgba(31, 30, 29, 0.12);
     --accent-color: #d97757;
     --del-color: #5c5a55;
+    /* v39: Alert 标签文字色兜底（皮肤可覆盖）；light 用更深值见皮肤文件 */
+    --alert-note-label: var(--accent-blue, #6a9bcc);
+    --alert-tip-label: var(--accent-green, #788c5d);
+    --alert-important-label: var(--accent-purple, #8b6f9d);
+    --alert-warning-label: var(--accent-gold, #ad7837);
+    --alert-caution-label: var(--accent-rose, #b45f51);
 }
 
 /* ========== 0. Fonts ==========
@@ -2737,25 +2743,26 @@ pre.md-meta-block {
     border-left-width: 0.28em !important;
     background: var(--alert-bg-default, rgba(255,255,255,.45)) !important;
 }
+/* v39 修复：边框/标签色回归皮肤变量，不再用 light 硬编码 !important 架空 dark/grey */
 #write .md-alert-note {
-    border-left-color: #5b8fc7 !important;
-    background: var(--alert-note-bg, rgba(106,155,204,.1)) !important;
+    border-left-color: var(--accent-blue) !important;
+    background: var(--alert-note-bg) !important;
 }
 #write .md-alert-tip {
-    border-left-color: #6b8f5e !important;
-    background: var(--alert-tip-bg, rgba(120,140,93,.11)) !important;
+    border-left-color: var(--accent-green) !important;
+    background: var(--alert-tip-bg) !important;
 }
 #write .md-alert-important {
-    border-left-color: #8b6f9d !important;
-    background: var(--alert-important-bg, rgba(139,111,157,.11)) !important;
+    border-left-color: var(--accent-purple) !important;
+    background: var(--alert-important-bg) !important;
 }
 #write .md-alert-warning {
-    border-left-color: #ad7837 !important;
-    background: var(--alert-warning-bg, rgba(173,120,55,.12)) !important;
+    border-left-color: var(--accent-gold) !important;
+    background: var(--alert-warning-bg) !important;
 }
 #write .md-alert-caution {
-    border-left-color: #b45f51 !important;
-    background: var(--alert-caution-bg, rgba(180,95,81,.11)) !important;
+    border-left-color: var(--accent-rose) !important;
+    background: var(--alert-caution-bg) !important;
 }
 #write .md-alert-text-container {
     font-family: var(--font-ui);
@@ -2764,11 +2771,11 @@ pre.md-meta-block {
     letter-spacing: 0.02em;
     margin-bottom: 0.25rem;
 }
-#write .md-alert-text-note { color: #3d6f9e; }
-#write .md-alert-text-tip { color: #4a6b42; }
-#write .md-alert-text-important { color: #6b4f7a; }
-#write .md-alert-text-warning { color: #8a5a20; }
-#write .md-alert-text-caution { color: #8f4035; }
+#write .md-alert-text-note { color: var(--alert-note-label); }
+#write .md-alert-text-tip { color: var(--alert-tip-label); }
+#write .md-alert-text-important { color: var(--alert-important-label); }
+#write .md-alert-text-warning { color: var(--alert-warning-label); }
+#write .md-alert-text-caution { color: var(--alert-caution-label); }
 /* Nested content inside alerts */
 #write .md-alert ul, #write .md-alert ol { margin: 0.4em 0; padding-left: 1.4em; }
 #write .md-alert .md-fences:not(.md-fences-advanced) { margin: 0.55em 0; font-size: 0.9em; }
