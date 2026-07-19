@@ -177,3 +177,54 @@
 .on-focus-mode #write .md-fences.md-fences-advanced:hover {
     opacity: 1;
 }
+
+/* ============================================================
+   CDP FIX 2026-07-15  (Runtime.evaluate on Typora 1.13.7)
+   - mermaid panel was computed font-family: sans-serif
+   - some #write p showed muted #5c5a55 instead of body text
+   - reinforce diagram label font via --diagram-font-family / --font-ui
+   ============================================================ */
+
+/* I. Body paragraphs: always narrative text color (not control/muted) */
+#write > p,
+#write p.md-end-block,
+#write p:not([class*="meta"]):not(.md-meta) {
+    color: var(--text-color, #141413);
+}
+
+/* YAML / meta blocks stay quieter if Typora tags them */
+#write .md-meta,
+#write pre.md-meta-block,
+#write > p.md-meta {
+    color: var(--control-text-color, #5c5a55);
+    font-family: var(--font-ui);
+    font-size: 0.9em;
+}
+
+/* J. Diagram panels: match UI font (CDP: was generic sans-serif) */
+#write .md-diagram-panel,
+#write .md-diagram-panel-preview,
+#write .md-fences-adv-panel,
+#write .md-fences[lang="mermaid"],
+#write .md-fences[lang="flow"],
+#write .md-fences[lang="sequence"],
+#write .md-fences[lang="mermaid"] foreignObject,
+#write .md-fences[lang="mermaid"] foreignObject div,
+#write .md-fences[lang="mermaid"] foreignObject span,
+#write .md-fences[lang="mermaid"] .nodeLabel,
+#write .md-fences[lang="mermaid"] .edgeLabel,
+#write .md-fences[lang="mermaid"] .label {
+    font-family: var(--diagram-font-family, var(--font-ui)) !important;
+}
+
+/* K. Links already accent-deep; ensure visited doesn't go purple */
+#write a:visited {
+    color: var(--accent-deep, #b55320);
+}
+
+/* L. Soften over-zoom readability when user keeps large customFontSize:
+      cap write measure slightly for comfort (does not fight rem tokens hard) */
+#write {
+    /* CDP: maxWidth 1040px @ 20px*1.2 — keep auto from --content-max* */
+    text-rendering: optimizeLegibility;
+}

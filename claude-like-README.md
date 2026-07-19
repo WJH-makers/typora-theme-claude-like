@@ -214,3 +214,4 @@ config:
 验收：桌面 `mermaid-测试.md`。完全退出 Typora 再开。
 
 备份目录：`backup-claude-like-v6-*`；`%TEMP%\typora-mermaid-v16-*`。
+| **v21** | 三皮肤节奏对齐：dark/grey 行高 1.75、段距 0.72em、显式三档栏宽 48/52/56rem（2026-07-18） |
