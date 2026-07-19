@@ -351,9 +351,10 @@ code, tt, #write code, #write tt {
 }
 
 /* ========== 13. Kbd  <kbd>  ========== */
+/* §50.12 已并入：padding/box-shadow 取补丁终值（无 glass 内高光） */
 kbd, #write kbd {
     display: inline-block;
-    padding: 0.1em 0.48em;
+    padding: 0.12em 0.45em;
     font-family: var(--font-ui);
     font-size: 0.8em;
     font-weight: 500;
@@ -363,7 +364,7 @@ kbd, #write kbd {
     border: 1px solid var(--kbd-border);
     border-bottom-width: 2px;
     border-radius: 5px;
-    box-shadow: 0 1px 0 var(--kbd-shadow), inset 0 1px 0 var(--glass-highlight);
+    box-shadow: 0 1px 0 var(--kbd-shadow, #c4c2ba);
     white-space: nowrap;
 }
 
@@ -386,10 +387,10 @@ var, #write var {
 
 /* ========== 15. Abbr / Cite / Q / Dfn / Time / Small ========== */
 abbr[title], #write abbr[title] {
-    text-decoration: underline dotted;
+    /* §50.12 已并入：下划线取陶土色终值 */
+    text-decoration: underline dotted var(--accent-color);
     text-underline-offset: 3px;
     cursor: help;
-    text-decoration-color: var(--muted-text-color);
     border-bottom: none;
 }
 cite, #write cite {
@@ -460,6 +461,10 @@ blockquote footer, blockquote cite {
 }
 #write blockquote:hover::after { content: none !important; }
 .on-focus-mode blockquote { border-left-color: var(--accent-color); }
+/* §50.10 活值：三层引用轻微降不透明度（其余属性由 §60.1 折叠块终裁） */
+#write blockquote blockquote blockquote {
+    opacity: 0.95;
+}
 
 /* ========== 17. Lists  - * +  1.  nested  (fixed) ========== */
 /* Top-level lists */
@@ -554,6 +559,8 @@ li p.first {
 #write ol:last-child { margin-bottom: 0; }
 
 #write li.md-list-item > p { margin: 0.12em 0; }
+/* §50.15：紧凑列表单段更贴（高特异性，压过 li > p 通则） */
+#write li.md-list-item > p:only-child { margin: 0.1em 0; }
 
 /* ========== 18. Task list  - [ ]  - [x]  ========== */
 #write ul.contains-task-list,
@@ -627,6 +634,24 @@ li p.first {
     opacity: 0.52;
 }
 
+/* §50.5 已并入（活值）：任务项高度/段距/复选框几何；
+   padding-left 与完成态色由 §60.3/§91.5 终裁，死值已删 */
+#write li.md-task-list-item {
+    min-height: 1.55em;
+}
+#write li.md-task-list-item > p { margin: 0.15em 0; }
+#write li.md-task-list-item > input[type="checkbox"] {
+    width: 1em;
+    height: 1em;
+    top: 0.28em;
+    left: 0.1em;
+    cursor: pointer;
+}
+#write li.md-task-list-item > ul,
+#write li.md-task-list-item > ol {
+    margin: 0.35em 0 0.45em;
+}
+
 /* ========== 19. Definition list  <dl><dt><dd>  ========== */
 dl, #write dl { margin: 0.9em 0; }
 dt, #write dt {
@@ -644,7 +669,8 @@ dd, #write dd {
     padding-left: 0.7rem;
     border-left: 2px solid var(--border-color);
     color: var(--control-text-color);
-    line-height: 1.6;
+    /* §50.7 终值 */
+    line-height: 1.65;
 }
 dd p { margin: 0.25em 0; }
 /* Tables after / inside def lists: keep full width (prefer top-level tables in MD) */
@@ -864,6 +890,64 @@ table td .md-math-inline, table th .md-math-inline { font-size: 0.95em; }
     padding: 0.45rem 0.55rem;
 }
 
+/* ----- §50.4 已并入：md-table 硬单元格（math/code/align/宽表）。
+   特异性 (1,2,x) 高于后续通则，是 MD 表格的实际渲染源 ----- */
+#write table.md-table {
+    border-collapse: collapse;
+    width: auto;
+    max-width: 100%;
+    font-variant-numeric: tabular-nums;
+}
+#write table.md-table th,
+#write table.md-table td {
+    border: 1px solid var(--table-grid-color, var(--border-soft, rgba(0,0,0,.1)));
+    padding: 0.42rem 0.65rem;
+    vertical-align: top;
+    line-height: 1.45;
+}
+#write table.md-table th {
+    background: var(--table-header-bg, var(--meta-bg));
+    font-family: var(--font-ui);
+    font-weight: 600;
+    font-size: 0.86rem;
+}
+#write table.md-table td { font-size: 0.9rem; }
+#write table.md-table tr:nth-child(even) td {
+    background: var(--table-zebra, rgba(61,61,58,.03));
+}
+#write table.md-table tr:hover td {
+    background: var(--table-hover-color, var(--accent-softer, rgba(217,119,87,.08)));
+}
+#write table.md-table code {
+    font-size: 0.84em;
+    padding: 0.08em 0.28em;
+}
+#write table.md-table .md-inline-math,
+#write table.md-table mjx-container {
+    font-size: 0.98em !important;
+}
+#write table.md-table a { word-break: break-all; }
+#write table.md-table img {
+    max-width: 100%;
+    max-height: 8rem;
+    vertical-align: middle;
+}
+#write table.md-table th[align="center"],
+#write table.md-table td[align="center"],
+#write table.md-table th[style*="text-align: center"],
+#write table.md-table td[style*="text-align: center"] { text-align: center; }
+#write table.md-table th[align="right"],
+#write table.md-table td[align="right"],
+#write table.md-table th[style*="text-align: right"],
+#write table.md-table td[style*="text-align: right"] { text-align: right; }
+#write .md-table-fig {
+    margin: 1.1em 0;
+    overflow-x: auto;
+    max-width: 100%;
+    border-radius: var(--radius-md, 10px);
+    -webkit-overflow-scrolling: touch;
+}
+
 /* ========== 22. Images  ![alt](src)  ========== */
 img, #write img {
     border-radius: var(--radius-md);
@@ -887,7 +971,8 @@ figcaption, #write figure > figcaption,
     font-size: 0.84rem;
     color: var(--muted-text-color);
     text-align: center;
-    margin-top: 0.5rem;
+    /* §50.9 终值（.35em 随图题字号缩放） */
+    margin-top: 0.35em;
     font-family: var(--font-ui);
     line-height: 1.45;
 }
@@ -935,6 +1020,14 @@ figcaption, #write figure > figcaption,
 }
 #write .md-image.md-img-error[alt]::after {
     content: "图片无法加载 · " attr(alt);
+}
+/* §50.9 已并入：坏图框细化（陶土虚线 + 收紧内距） */
+#write .md-image.md-img-error {
+    border: 1px dashed var(--accent-color);
+    padding: 0.5rem;
+    color: var(--muted-text-color);
+    font-family: var(--font-ui);
+    font-size: 0.88rem;
 }
 
 /* ========== 23. Video / Audio / Iframe  ========== */
@@ -1296,6 +1389,14 @@ pre.md-fences:not(.md-fences-advanced) {
     background: transparent !important;
     box-shadow: none !important;
 }
+/* §50.13 已并入：普通围栏滚动 + 语言输入加粗 */
+#write .md-fences:not(.md-fences-advanced) .CodeMirror-scroll {
+    overflow: auto !important;
+}
+#write .md-fences:not(.md-fences-advanced) .code-tooltip .ty-input {
+    color: var(--pre-lang-color, var(--muted-text-color)) !important;
+    font-weight: 600 !important;
+}
 
 /* CodeMirror: backgrounds + token colors only */
 .md-fences .CodeMirror,
@@ -1573,30 +1674,49 @@ pre.md-fences:not(.md-fences-advanced) {
     border-radius: 99px;
 }
 
+/* ----- §50.8 已并入：块级公式面板底色/边框走 --math-block-* token；
+   margin/padding 终值见 §91.9 折叠块 ----- */
+#write .md-math-block,
+#write .mathjax-block {
+    margin: 1.05em 0;
+    padding: 0.85rem 1rem;
+    background: var(--math-block-bg, var(--elevated-bg, #fffcf7));
+    border: 1px solid var(--math-block-border, var(--border-soft));
+    border-radius: var(--radius-md, 10px);
+    overflow-x: auto;
+    text-align: center;
+}
+#write .md-math-block mjx-container[display="true"],
+#write .mathjax-block mjx-container[display="true"] {
+    font-size: var(--math-display-scale, 1.18em) !important;
+    margin: 0.2em auto !important;
+}
+
 /* ========== 28. YAML front matter  ========== */
+/* §42 seam + §50.1 已并入为单一终值规则（!important 对抗 Typora 库存 meta 样式） */
 #write pre.md-meta-block,
+pre.md-meta-block,
 .md-meta-block {
-    padding: 0.95rem 1.15rem;
-    font-size: 0.84rem;
-    line-height: 1.55;
-    font-family: var(--font-mono);
-    background: linear-gradient(90deg, var(--accent-softer), transparent 40%), var(--meta-bg);
-    border: 1px solid var(--border-soft);
-    border-left: 3px solid var(--accent-color);
-    border-radius: var(--radius-md);
-    color: var(--control-text-color);
-    margin-top: 0 !important;
-    margin-bottom: 1.35rem;
+    font-family: var(--font-mono) !important;
+    font-size: 0.82rem !important;
+    line-height: 1.55 !important;
+    color: var(--control-text-color) !important;
+    background:
+        linear-gradient(90deg, var(--accent-softer, rgba(217,119,87,.12)), transparent 42%),
+        var(--meta-bg, #f0eee6) !important;
+    border: 1px solid var(--border-soft, rgba(0,0,0,.08)) !important;
+    border-left: 3px solid var(--accent-color) !important;
+    border-radius: var(--radius-md, 10px) !important;
+    padding: 0.85rem 1rem !important;
+    margin: 0 0 1.5rem !important;
+    white-space: pre-wrap !important;
+    overflow-x: auto !important;
     box-shadow: 0 1px 0 var(--glass-highlight) inset;
 }
 
 /* ========== 29. TOC  [TOC]  ========== */
+/* 几何/底色终值在下方 §50.2 折叠块（!important）；此处仅保留其未覆盖的活值 */
 .md-toc, #write .md-toc {
-    margin-top: 1.35rem;
-    padding: 1.15rem 1.3rem 1.15rem;
-    background: linear-gradient(180deg, rgba(255,255,255,0.5), transparent), var(--panel-bg);
-    border: 1px solid var(--border-soft);
-    border-radius: var(--radius-lg);
     box-shadow: var(--shadow-card);
     position: relative;
     overflow: hidden;
@@ -1627,30 +1747,100 @@ pre.md-fences:not(.md-fences-advanced) {
 }
 .md-toc a:hover { color: var(--accent-color); }
 
+/* ----- §50.2 已并入：TOC 卡片终值 + CONTENTS 标签（::before，与上方 3px 渐变条叠加） ----- */
+#write .md-toc,
+.md-toc {
+    margin: 1.35em 0 1.6em !important;
+    padding: 0.95rem 1.1rem 1rem !important;
+    background: var(--panel-bg, var(--meta-bg, #f8f6ef)) !important;
+    border: 1px solid var(--border-soft, rgba(0,0,0,.08)) !important;
+    border-radius: var(--radius-lg, 14px) !important;
+    border-top: 2.5px solid var(--accent-color) !important;
+    font-family: var(--font-ui) !important;
+    font-size: 0.9rem !important;
+    max-height: none !important;
+}
+#write .md-toc::before {
+    content: "CONTENTS";
+    display: block;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--muted-text-color);
+    margin-bottom: 0.55rem;
+}
+#write .md-toc-item { line-height: 1.55; margin: 0.12em 0; }
+#write .md-toc-inner {
+    color: var(--text-color) !important;
+    text-decoration: none !important;
+    border-bottom: 1px solid transparent;
+}
+#write .md-toc-inner:hover {
+    color: var(--accent-color) !important;
+    border-bottom-color: var(--accent-color);
+}
+#write .md-toc-h1 .md-toc-inner { font-weight: 650; }
+#write .md-toc-h2 .md-toc-inner { font-weight: 500; opacity: 0.95; }
+#write .md-toc-h3 .md-toc-inner,
+#write .md-toc-h4 .md-toc-inner,
+#write .md-toc-h5 .md-toc-inner,
+#write .md-toc-h6 .md-toc-inner { opacity: 0.88; font-size: 0.96em; }
+
 /* ========== 30. Footnotes  [^1]  ========== */
+/* 区域几何/配色终值在下方 §50.6 折叠块（!important） */
 .footnotes, .footnotes-area, #write .footnotes {
-    font-size: 0.9em;
-    color: var(--control-text-color);
-    border-top: 1px solid var(--border-color);
-    margin-top: 2.25rem;
-    padding-top: 0.85rem;
     font-family: var(--font-body);
 }
 .footnotes ol { padding-left: 1.25rem; }
 .footnotes li { margin: 0.4em 0; line-height: 1.55; }
 .footnotes hr { display: none; }
+/* §50.6 已并入：脚注角标胶囊终值 + §30 活值（border 0 / top 基线微调） */
 sup.md-footnote, #write sup.md-footnote {
-    color: var(--accent-deep) !important;
     font-family: var(--font-ui) !important;
-    font-size: 0.55em !important;
-    font-weight: 600;
-    background: transparent !important;
+    font-size: 0.72em !important;
+    font-weight: 600 !important;
+    color: var(--accent-deep, var(--accent-color)) !important;
+    background: var(--accent-softer, rgba(217,119,87,.12)) !important;
     border: 0 !important;
-    padding: 0 !important;
+    border-radius: 4px !important;
+    padding: 0 0.32em !important;
+    margin: 0 0.08em !important;
+    vertical-align: super !important;
     top: -1.1em;
-    margin-left: 0.04em;
 }
 sup.md-footnote:hover { color: var(--accent-hover) !important; }
+#write sup.md-footnote a { color: inherit !important; text-decoration: none !important; }
+#write .footnotes-area,
+#write .footnotes {
+    margin-top: 2.25rem !important;
+    padding: 0.95rem 1.05rem 0.65rem !important;
+    background: var(--panel-bg, var(--meta-bg)) !important;
+    border: 1px solid var(--border-soft) !important;
+    border-top: 2.5px solid var(--accent-color) !important;
+    border-radius: var(--radius-md, 10px) !important;
+    font-size: 0.88em !important;
+    color: var(--control-text-color) !important;
+}
+#write .footnotes-area::before,
+#write .footnotes::before {
+    content: "FOOTNOTES";
+    display: block;
+    font-family: var(--font-ui);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    color: var(--muted-text-color);
+    margin-bottom: 0.5rem;
+}
+#write .footnote-line { margin: 0.4em 0; line-height: 1.55; }
+#write .footnote-line .reversefootnote {
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    color: var(--accent-color);
+    text-decoration: none;
+    margin-left: 0.25em;
+}
+#write .footnote-line .reversefootnote:hover { text-decoration: underline; }
 a.footnote-backref, .footnote-backref {
     color: var(--accent-color);
     text-decoration: none;
@@ -1682,6 +1872,8 @@ a.footnote-backref, .footnote-backref {
 }
 
 /* ========== 31. GFM Alerts  > [!NOTE]  ========== */
+/* 容器硬几何/五色底终值在本节末 §50.3 折叠块（!important）；
+   此处保留 per-type custom property 管线与未被覆盖的活值 */
 #write .md-alert {
     --alert-accent: var(--accent-color);
     --alert-bg: var(--alert-bg-default);
@@ -1690,14 +1882,7 @@ a.footnote-backref, .footnote-backref {
     --alert-border: var(--border-soft);
     position: relative;
     margin: 1rem 0;
-    padding: 0.78rem 1rem 0.85rem 1.05rem;
     color: var(--text-color);
-    background:
-        linear-gradient(180deg, var(--alert-bg), var(--alert-bg-soft)),
-        linear-gradient(90deg, var(--alert-wash), transparent 40%);
-    border: 1px solid var(--alert-border);
-    border-left: 3px solid var(--alert-accent);
-    border-radius: var(--radius-md);
     box-shadow: var(--shadow-card);
 }
 #write .md-alert-note {
@@ -1766,6 +1951,47 @@ a.footnote-backref, .footnote-backref {
 #write .md-alert .md-fences .CodeMirror-linenumber {
     color: var(--code-muted-color) !important;
 }
+/* ----- §50.3 已并入：容器硬几何 + 五色左轨/底色（v39 变量化）+ 标签排印。
+   margin 终值见 §60.5 折叠块；嵌套内容间距亦由 §60/§70 终裁 ----- */
+#write .md-alert {
+    padding: 0.75rem 1rem 0.85rem 1.05rem !important;
+    border-radius: 0 var(--radius-md, 10px) var(--radius-md, 10px) 0 !important;
+    border: 1px solid var(--border-soft) !important;
+    border-left-width: 0.28em !important;
+    background: var(--alert-bg-default, rgba(255,255,255,.45)) !important;
+}
+#write .md-alert-note {
+    border-left-color: var(--accent-blue) !important;
+    background: var(--alert-note-bg) !important;
+}
+#write .md-alert-tip {
+    border-left-color: var(--accent-green) !important;
+    background: var(--alert-tip-bg) !important;
+}
+#write .md-alert-important {
+    border-left-color: var(--accent-purple) !important;
+    background: var(--alert-important-bg) !important;
+}
+#write .md-alert-warning {
+    border-left-color: var(--accent-gold) !important;
+    background: var(--alert-warning-bg) !important;
+}
+#write .md-alert-caution {
+    border-left-color: var(--accent-rose) !important;
+    background: var(--alert-caution-bg) !important;
+}
+#write .md-alert-text-container {
+    font-family: var(--font-ui);
+    font-weight: 700;
+    font-size: 0.88rem;
+    letter-spacing: 0.02em;
+    margin-bottom: 0.25rem;
+}
+#write .md-alert-text-note { color: var(--alert-note-label); }
+#write .md-alert-text-tip { color: var(--alert-tip-label); }
+#write .md-alert-text-important { color: var(--alert-important-label); }
+#write .md-alert-text-warning { color: var(--alert-warning-label); }
+#write .md-alert-text-caution { color: var(--alert-caution-label); }
 /* ========== 32. Ruby  <ruby><rt>  ========== */
 /* Ruby only. Other semantic inlines: kbd §13 · samp/var §14 · abbr/cite/q/dfn/time/small §15 · emoji §34 */
 ruby, #write ruby {
@@ -1842,6 +2068,11 @@ span[md-inline="html"] {
     background: transparent !important;
     border-radius: 0 !important;
 }
+/* §50.18 已并入：emoji 字体族 + 围栏内还原 */
+#write .md-emoji {
+    font-family: "Segoe UI Emoji", "Segoe UI Symbol", "Apple Color Emoji", sans-serif;
+}
+#write .md-fences .md-emoji { font-family: inherit; }
 
 /* ========== 35. Typora meta / expand markers ========== */
 #write .md-pair-s.md-expand > .md-meta.md-before,
@@ -2219,18 +2450,35 @@ header, .context-menu, .megamenu-content, footer { font-family: var(--font-ui); 
     table tbody tr:hover td,
     table tbody tr:hover th { background: inherit !important; }
     #typora-sidebar { display: none !important; }
+    /* §50.17 已并入：打印隐藏装饰标签 + 分页保护 */
+    #write .md-toc::before,
+    #write .footnotes-area::before,
+    #write .footnotes::before,
+    #write .md-fences.md-fences-advanced[lang]::before {
+        display: none !important;
+    }
+    #write .md-alert,
+    #write details,
+    #write .md-math-block,
+    #write .md-table-fig,
+    #write .md-fences.md-fences-advanced {
+        break-inside: avoid;
+        page-break-inside: avoid;
+        box-shadow: none !important;
+    }
 }
 
 
 
 /* ========== 42. v6 tag seam patches (def-list / YAML / alert) ========== */
+/* dl/dt/dd 的终值已并入 §19（§50.7/§60.7 折叠）；此处仅剩：
+   - dl 的 padding/border-left（补丁层未覆盖的活值）
+   - .md-def-name / .md-def-content（链接引用定义元素，非 dt/dd） */
 #write dl,
 #write .md-def-list {
-    margin: 0.85em 0 1em;
     padding: 0.15rem 0 0.15rem 0.85rem;
     border-left: 2px solid var(--border-soft);
 }
-#write dt,
 #write .md-def-name {
     font-family: var(--font-ui);
     font-weight: 600;
@@ -2238,23 +2486,10 @@ header, .context-menu, .megamenu-content, footer { font-family: var(--font-ui); 
     color: var(--heading-color);
     margin-top: 0.65em;
 }
-#write dd,
 #write .md-def-content {
     margin: 0.2em 0 0.45em 1rem;
     color: var(--control-text-color);
     line-height: 1.6;
-}
-#write pre.md-meta-block,
-#write .md-meta-block {
-    font-family: var(--font-mono);
-    font-size: 0.82rem;
-    line-height: 1.55;
-    color: var(--code-muted-color, var(--muted-text-color));
-    background: var(--meta-bg) !important;
-    border: 1px solid var(--border-soft);
-    border-radius: var(--radius-md);
-    padding: 0.85rem 1rem;
-    margin: 0 0 1.4rem;
 }
 #typora-source .cm-meta,
 #typora-source .cm-atom {
@@ -2374,27 +2609,7 @@ header, .context-menu, .megamenu-content, footer { font-family: var(--font-ui); 
 }
 
 /* ----- Blockquote + nested content ----- */
-#write blockquote ul,
-#write blockquote ol {
-    margin: 0.4em 0;
-    padding-left: 1.4em;
-}
-#write blockquote li { line-height: 1.6; }
-#write blockquote .md-fences:not(.md-fences-advanced),#write blockquote pre.md-fences:not(.md-fences-advanced) {
-    margin: 0.65em 0;
-    font-size: 0.88em;
-}
-#write blockquote table {
-    font-size: 0.9em;
-    margin: 0.65em 0;
-}
-#write blockquote > :first-child { margin-top: 0.15em; }
-#write blockquote > :last-child { margin-bottom: 0.15em; }
-/* list item containing blockquote */
-#write li > blockquote {
-    margin: 0.45em 0;
-    padding-left: 0.85rem;
-}
+/* （引用内列表/码/表间距与 first/last 挤压、li>blockquote —— 全部被 §60.1/§60.2 终裁 → 删） */
 
 /* ----- Lists: tight vs loose, ol markers, nested depth colors ----- */
 #write ol { list-style-type: decimal; }
@@ -2455,11 +2670,7 @@ header, .context-menu, .megamenu-content, footer { font-family: var(--font-ui); 
     display: inline-block;
     vertical-align: middle;
 }
-#write p > .md-image:only-child,
-#write p > img:only-child {
-    display: block;
-    margin: 0.35em auto;
-}
+/* （p > 独图居中的终值 0.85em auto 在 §70.8，此处旧值已死 → 删） */
 #write a.md-image-link img,
 #write span.md-image > img {
     cursor: zoom-in;
@@ -2482,7 +2693,8 @@ header, .context-menu, .megamenu-content, footer { font-family: var(--font-ui); 
 #write iframe {
     display: block;
     max-width: 100%;
-    margin: 1em auto;
+    /* §50.12 终值 */
+    margin: 0.85em auto;
     border-radius: var(--radius-md);
     border: 1px solid var(--border-soft);
     background: var(--media-bg);
@@ -2497,13 +2709,11 @@ header, .context-menu, .megamenu-content, footer { font-family: var(--font-ui); 
 /* Details chrome: only §24 (duplicates removed — they broke nested code) */
 
 /* ----- Math block as soft panel ----- */
+/* 底色/边框/圆角由 §27 的 --math-block-* token 终裁（原本被 §50.8 压死，勿在此重设） */
 #write .md-math-block,
 #write .mathjax-block {
     margin: 1.15em 0;
     padding: 0.85rem 1rem;
-    background: var(--elevated-bg);
-    border: 1px solid var(--border-soft);
-    border-radius: var(--radius-md);
     box-shadow: var(--shadow-card);
     text-align: center;
     overflow-x: auto;
@@ -2513,9 +2723,7 @@ header, .context-menu, .megamenu-content, footer { font-family: var(--font-ui); 
 }
 
 /* ----- TOC deeper levels + active feel ----- */
-#write .md-toc {
-    margin: 1.5em 0 1.75em;
-}
+/* （margin 与 h1/h2 锚点字重已被 §29 折叠块压死 → 删） */
 .md-toc .md-toc-content {
     max-height: none;
 }
@@ -2523,31 +2731,9 @@ header, .context-menu, .megamenu-content, footer { font-family: var(--font-ui); 
     color: var(--accent-color);
     outline: none;
 }
-.md-toc-h1 a { font-weight: 600; }
-.md-toc-h2 a { font-weight: 500; }
 
 /* ----- Footnotes area polish ----- */
-#write .footnotes,
-#write .footnotes-area {
-    font-size: 0.88em;
-    margin-top: 2.5rem;
-    padding: 1rem 1.1rem 0.5rem;
-    background: var(--panel-bg);
-    border: 1px solid var(--border-soft);
-    border-radius: var(--radius-md);
-    border-top: 2px solid var(--border-color);
-}
-#write .footnotes::before,
-#write .footnotes-area::before {
-    content: "FOOTNOTES";
-    display: block;
-    font-family: var(--font-ui);
-    font-size: 0.68rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    color: var(--muted-text-color);
-    margin-bottom: 0.45rem;
-}
+/* （区域卡片与 FOOTNOTES 标签已被 §30 的 §50.6 折叠块终裁 → 删） */
 #write .footnotes p { margin: 0.25em 0; }
 
 /* ----- Alerts: nested list/code/table/blockquote ----- */
@@ -2580,7 +2766,8 @@ header, .context-menu, .megamenu-content, footer { font-family: var(--font-ui); 
 }
 #write ruby rt {
     font-family: var(--font-ui);
-    font-size: 0.65em;
+    /* §50.12 终值 */
+    font-size: 0.62em;
     color: var(--muted-text-color);
 }
 
@@ -2631,471 +2818,24 @@ header, .context-menu, .megamenu-content, footer { font-family: var(--font-ui); 
 /* nested details → §24 */
 
 /* ----- Export: keep composition readable ----- */
+/* 注：.md-toc/.footnotes-area 的打印底色/边框在原始层序中被 §50.2/§50.6
+   的屏幕 !important 压死（位置更后）→ 折叠后如在此保留会复活。只留曾生效的部分。 */
 @media print {
     #write .md-math-block,
-    #write details,
-    #write .md-toc,
-    #write .footnotes-area {
+    #write details {
         box-shadow: none !important;
         background: #faf9f5 !important;
         border: 1px solid #d4d2ca !important;
     }
+    #write .md-toc {
+        box-shadow: none !important;
+    }
 }
 
 /* ============================================================
-   §50  v12 HARD MARKDOWN LAB
-   Research-driven polish for Typora 1.13 difficult formats.
-   Sources: Typora Markdown Reference + stock base.css behaviour.
-   Principle: enhance chrome only; never fight CM/MathJax/Mermaid geometry.
+   §50 v12 HARD MARKDOWN LAB — 已全部折叠进 §8–§40 各节（v40 重构）：
+   活值就地并入原节；被 §60/§70/§91 压死的规则已删除。
    ============================================================ */
-
-/* ----- 50.1 YAML front matter ----- */
-#write pre.md-meta-block,
-pre.md-meta-block {
-    font-family: var(--font-mono) !important;
-    font-size: 0.82rem !important;
-    line-height: 1.55 !important;
-    color: var(--control-text-color) !important;
-    background:
-        linear-gradient(90deg, var(--accent-softer, rgba(217,119,87,.12)), transparent 42%),
-        var(--meta-bg, #f0eee6) !important;
-    border: 1px solid var(--border-soft, rgba(0,0,0,.08)) !important;
-    border-left: 3px solid var(--accent-color) !important;
-    border-radius: var(--radius-md, 10px) !important;
-    padding: 0.85rem 1rem !important;
-    margin: 0 0 1.5rem !important;
-    white-space: pre-wrap !important;
-    overflow-x: auto !important;
-}
-
-/* ----- 50.2 TOC [toc] ----- */
-#write .md-toc,
-.md-toc {
-    margin: 1.35em 0 1.6em !important;
-    padding: 0.95rem 1.1rem 1rem !important;
-    background: var(--panel-bg, var(--meta-bg, #f8f6ef)) !important;
-    border: 1px solid var(--border-soft, rgba(0,0,0,.08)) !important;
-    border-radius: var(--radius-lg, 14px) !important;
-    border-top: 2.5px solid var(--accent-color) !important;
-    font-family: var(--font-ui) !important;
-    font-size: 0.9rem !important;
-    max-height: none !important;
-}
-#write .md-toc::before {
-    content: "CONTENTS";
-    display: block;
-    font-size: 0.68rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    color: var(--muted-text-color);
-    margin-bottom: 0.55rem;
-}
-#write .md-toc-item { line-height: 1.55; margin: 0.12em 0; }
-#write .md-toc-inner {
-    color: var(--text-color) !important;
-    text-decoration: none !important;
-    border-bottom: 1px solid transparent;
-}
-#write .md-toc-inner:hover {
-    color: var(--accent-color) !important;
-    border-bottom-color: var(--accent-color);
-}
-#write .md-toc-h1 .md-toc-inner { font-weight: 650; }
-#write .md-toc-h2 .md-toc-inner { font-weight: 500; opacity: 0.95; }
-#write .md-toc-h3 .md-toc-inner,
-#write .md-toc-h4 .md-toc-inner,
-#write .md-toc-h5 .md-toc-inner,
-#write .md-toc-h6 .md-toc-inner { opacity: 0.88; font-size: 0.96em; }
-
-/* ----- 50.3 GFM Alerts / Callouts (all 5) ----- */
-#write .md-alert {
-    margin: 1.05em 0 !important;
-    padding: 0.75rem 1rem 0.85rem 1.05rem !important;
-    border-radius: 0 var(--radius-md, 10px) var(--radius-md, 10px) 0 !important;
-    border: 1px solid var(--border-soft) !important;
-    border-left-width: 0.28em !important;
-    background: var(--alert-bg-default, rgba(255,255,255,.45)) !important;
-}
-/* v39 修复：边框/标签色回归皮肤变量，不再用 light 硬编码 !important 架空 dark/grey */
-#write .md-alert-note {
-    border-left-color: var(--accent-blue) !important;
-    background: var(--alert-note-bg) !important;
-}
-#write .md-alert-tip {
-    border-left-color: var(--accent-green) !important;
-    background: var(--alert-tip-bg) !important;
-}
-#write .md-alert-important {
-    border-left-color: var(--accent-purple) !important;
-    background: var(--alert-important-bg) !important;
-}
-#write .md-alert-warning {
-    border-left-color: var(--accent-gold) !important;
-    background: var(--alert-warning-bg) !important;
-}
-#write .md-alert-caution {
-    border-left-color: var(--accent-rose) !important;
-    background: var(--alert-caution-bg) !important;
-}
-#write .md-alert-text-container {
-    font-family: var(--font-ui);
-    font-weight: 700;
-    font-size: 0.88rem;
-    letter-spacing: 0.02em;
-    margin-bottom: 0.25rem;
-}
-#write .md-alert-text-note { color: var(--alert-note-label); }
-#write .md-alert-text-tip { color: var(--alert-tip-label); }
-#write .md-alert-text-important { color: var(--alert-important-label); }
-#write .md-alert-text-warning { color: var(--alert-warning-label); }
-#write .md-alert-text-caution { color: var(--alert-caution-label); }
-/* Nested content inside alerts */
-#write .md-alert ul, #write .md-alert ol { margin: 0.4em 0; padding-left: 1.4em; }
-#write .md-alert .md-fences:not(.md-fences-advanced) { margin: 0.55em 0; font-size: 0.9em; }
-#write .md-alert table { font-size: 0.92em; margin: 0.5em 0; }
-#write .md-alert .md-inline-math { font-size: 1.02em; }
-#write .md-alert > :first-child { margin-top: 0.05em; }
-#write .md-alert > :last-child { margin-bottom: 0.05em; }
-
-/* ----- 50.4 Tables: hard cells (math/code/align/wide) ----- */
-#write table.md-table {
-    border-collapse: collapse;
-    width: auto;
-    max-width: 100%;
-    font-variant-numeric: tabular-nums;
-}
-#write table.md-table th,
-#write table.md-table td {
-    border: 1px solid var(--table-grid-color, var(--border-soft, rgba(0,0,0,.1)));
-    padding: 0.42rem 0.65rem;
-    vertical-align: top;
-    line-height: 1.45;
-}
-#write table.md-table th {
-    background: var(--table-header-bg, var(--meta-bg));
-    font-family: var(--font-ui);
-    font-weight: 600;
-    font-size: 0.86rem;
-}
-#write table.md-table td { font-size: 0.9rem; }
-#write table.md-table tr:nth-child(even) td {
-    background: var(--table-zebra, rgba(61,61,58,.03));
-}
-#write table.md-table tr:hover td {
-    background: var(--table-hover-color, var(--accent-softer, rgba(217,119,87,.08)));
-}
-/* inline hard spans in cells */
-#write table.md-table code {
-    font-size: 0.84em;
-    padding: 0.08em 0.28em;
-}
-#write table.md-table .md-inline-math,
-#write table.md-table mjx-container {
-    font-size: 0.98em !important;
-}
-#write table.md-table a { word-break: break-all; }
-#write table.md-table img {
-    max-width: 100%;
-    max-height: 8rem;
-    vertical-align: middle;
-}
-/* alignment helpers Typora sets */
-#write table.md-table th[align="center"],
-#write table.md-table td[align="center"],
-#write table.md-table th[style*="text-align: center"],
-#write table.md-table td[style*="text-align: center"] { text-align: center; }
-#write table.md-table th[align="right"],
-#write table.md-table td[align="right"],
-#write table.md-table th[style*="text-align: right"],
-#write table.md-table td[style*="text-align: right"] { text-align: right; }
-/* wide table figure scroll */
-#write .md-table-fig {
-    margin: 1.1em 0;
-    overflow-x: auto;
-    max-width: 100%;
-    border-radius: var(--radius-md, 10px);
-    -webkit-overflow-scrolling: touch;
-}
-
-/* ----- 50.5 Task lists (nested + mixed) ----- */
-#write li.md-task-list-item {
-    padding-left: 1.65em !important;
-    min-height: 1.55em;
-}
-#write li.md-task-list-item > p { margin: 0.15em 0; }
-#write li.md-task-list-item.task-list-done > p,
-#write li.md-task-list-item.task-list-done {
-    color: var(--muted-text-color);
-}
-#write li.md-task-list-item > input[type="checkbox"] {
-    width: 1em;
-    height: 1em;
-    top: 0.28em;
-    left: 0.1em;
-    cursor: pointer;
-}
-/* task containing nested list/code */
-#write li.md-task-list-item > ul,
-#write li.md-task-list-item > ol {
-    margin: 0.35em 0 0.45em;
-}
-#write li.md-task-list-item .md-fences:not(.md-fences-advanced) {
-    margin: 0.45em 0;
-    font-size: 0.9em;
-}
-
-/* ----- 50.6 Footnotes ----- */
-#write sup.md-footnote {
-    font-family: var(--font-ui) !important;
-    font-size: 0.72em !important;
-    font-weight: 600 !important;
-    color: var(--accent-deep, var(--accent-color)) !important;
-    background: var(--accent-softer, rgba(217,119,87,.12)) !important;
-    border-radius: 4px !important;
-    padding: 0 0.32em !important;
-    margin: 0 0.08em !important;
-    vertical-align: super !important;
-}
-#write sup.md-footnote a { color: inherit !important; text-decoration: none !important; }
-#write .footnotes-area,
-#write .footnotes {
-    margin-top: 2.25rem !important;
-    padding: 0.95rem 1.05rem 0.65rem !important;
-    background: var(--panel-bg, var(--meta-bg)) !important;
-    border: 1px solid var(--border-soft) !important;
-    border-top: 2.5px solid var(--accent-color) !important;
-    border-radius: var(--radius-md, 10px) !important;
-    font-size: 0.88em !important;
-    color: var(--control-text-color) !important;
-}
-#write .footnotes-area::before,
-#write .footnotes::before {
-    content: "FOOTNOTES";
-    display: block;
-    font-family: var(--font-ui);
-    font-size: 0.68rem;
-    font-weight: 700;
-    letter-spacing: 0.09em;
-    color: var(--muted-text-color);
-    margin-bottom: 0.5rem;
-}
-#write .footnote-line { margin: 0.4em 0; line-height: 1.55; }
-#write .footnote-line .reversefootnote {
-    font-family: var(--font-mono);
-    font-size: 0.85em;
-    color: var(--accent-color);
-    text-decoration: none;
-    margin-left: 0.25em;
-}
-#write .footnote-line .reversefootnote:hover { text-decoration: underline; }
-
-/* ----- 50.7 Definition lists ----- */
-#write dl { margin: 1em 0; }
-#write dt {
-    font-family: var(--font-ui);
-    font-weight: 700;
-    color: var(--accent-deep, var(--accent-color));
-    margin-top: 0.75rem;
-    font-size: 0.95em;
-}
-#write dd {
-    margin: 0.25rem 0 0.55rem 0.15rem;
-    padding: 0.2rem 0 0.2rem 0.85rem;
-    border-left: 2px solid var(--border-color, rgba(0,0,0,.12));
-    color: var(--control-text-color);
-    line-height: 1.65;
-}
-#write dd > p { margin: 0.2em 0; }
-#write dd code { font-size: 0.88em; }
-
-/* ----- 50.8 Math hard contexts ----- */
-#write .md-inline-math {
-    font-size: var(--math-inline-scale, 1.06em);
-}
-#write li .md-inline-math,
-#write blockquote .md-inline-math,
-#write td .md-inline-math,
-#write th .md-inline-math,
-#write .md-alert .md-inline-math,
-#write .footnote-line .md-inline-math {
-    font-size: 1.02em;
-}
-#write .md-math-block,
-#write .mathjax-block {
-    margin: 1.05em 0;
-    padding: 0.85rem 1rem;
-    background: var(--math-block-bg, var(--elevated-bg, #fffcf7));
-    border: 1px solid var(--math-block-border, var(--border-soft));
-    border-radius: var(--radius-md, 10px);
-    overflow-x: auto;
-    text-align: center;
-}
-#write .md-math-block mjx-container[display="true"],
-#write .mathjax-block mjx-container[display="true"] {
-    font-size: var(--math-display-scale, 1.18em) !important;
-    margin: 0.2em auto !important;
-}
-/* math inside list: tighter */
-#write li > .md-math-block,
-#write li > .mathjax-block {
-    margin: 0.55em 0;
-    padding: 0.65rem 0.8rem;
-}
-
-/* ----- 50.9 Images / figures / captions ----- */
-#write p > .md-image:only-child,
-#write p > img:only-child {
-    display: block;
-    margin: 0.85em auto;
-}
-#write img {
-    max-width: 100%;
-    height: auto;
-    border-radius: var(--radius-sm, 6px);
-}
-#write .md-image.md-img-error {
-    border: 1px dashed var(--accent-color);
-    padding: 0.5rem;
-    color: var(--muted-text-color);
-    font-family: var(--font-ui);
-    font-size: 0.88rem;
-}
-#write .md-image-caption,
-#write p.md-image-caption,
-#write figcaption {
-    text-align: center;
-    font-family: var(--font-ui);
-    font-size: 0.84rem;
-    color: var(--muted-text-color);
-    margin-top: 0.35em;
-}
-
-/* ----- 50.10 Blockquote nesting 1–4 ----- */
-#write blockquote {
-    margin: 1em 0;
-    padding: 0.15rem 0 0.15rem 1rem;
-    border-left: 3px solid var(--accent-color);
-    color: var(--quote-text-color, var(--control-text-color));
-    background: linear-gradient(90deg, var(--accent-softer, rgba(217,119,87,.08)), transparent 70%);
-}
-#write blockquote blockquote {
-    border-left-color: var(--accent-deep, #b55320);
-    background: transparent;
-    margin: 0.55em 0;
-}
-#write blockquote blockquote blockquote {
-    border-left-color: var(--border-strong, rgba(0,0,0,.2));
-    opacity: 0.95;
-}
-#write blockquote > :first-child { margin-top: 0.15em; }
-#write blockquote > :last-child { margin-bottom: 0.15em; }
-#write blockquote .md-fences:not(.md-fences-advanced) { font-size: 0.9em; margin: 0.5em 0; }
-#write blockquote table { font-size: 0.92em; }
-
-/* ----- 50.11 Details → see §24 only ----- */
-
-/* ----- 50.12 HTML inline hard spans ----- */
-#write kbd {
-    font-family: var(--font-ui);
-    font-size: 0.8em;
-    padding: 0.12em 0.45em;
-    border-radius: 5px;
-    border: 1px solid var(--kbd-border, #d4d2ca);
-    border-bottom-width: 2px;
-    background: var(--kbd-bg, #f0eee6);
-    color: var(--kbd-color, #3d3d3a);
-    box-shadow: 0 1px 0 var(--kbd-shadow, #c4c2ba);
-}
-#write mark {
-    background: linear-gradient(180deg, transparent 52%, var(--mark-wash, rgba(217,119,87,.3)) 52%);
-    color: inherit;
-    padding: 0 0.12em;
-    border-radius: 2px;
-}
-#write abbr[title] {
-    text-decoration: underline dotted var(--accent-color);
-    text-underline-offset: 3px;
-    cursor: help;
-}
-#write ruby rt {
-    font-family: var(--font-ui);
-    font-size: 0.62em;
-    color: var(--muted-text-color);
-}
-#write video,
-#write audio,
-#write iframe {
-    max-width: 100%;
-    display: block;
-    margin: 0.85em auto;
-    border-radius: var(--radius-md, 10px);
-}
-#write iframe {
-    min-height: 16rem;
-    border: 1px solid var(--border-soft);
-}
-
-/* ----- 50.13 NORMAL code only (never touch advanced/diagram) ----- */
-#write .md-fences:not(.md-fences-advanced) .CodeMirror-scroll {
-    overflow: auto !important;
-}
-#write .md-fences:not(.md-fences-advanced) .code-tooltip .ty-input {
-    color: var(--pre-lang-color, var(--muted-text-color)) !important;
-    font-weight: 600 !important;
-}
-
-/* ----- 50.14 Diagrams: do not re-override mermaid (see §26 v15) ----- */
-
-/* ----- 50.15 Lists: deep mix with blocks ----- */
-#write li > .md-fences:not(.md-fences-advanced) { margin: 0.45em 0; }
-#write li > .md-math-block { margin: 0.5em 0; }
-#write li > blockquote { margin: 0.45em 0; }
-#write li > .md-table-fig { margin: 0.5em 0; }
-#write li > p { margin: 0.2em 0; }
-/* tight vs loose */
-#write li.md-list-item > p:only-child { margin: 0.1em 0; }
-
-/* ----- 50.16 Horizontal rule ----- */
-#write hr {
-    height: 0;
-    border: 0;
-    margin: 2rem 0;
-    background: linear-gradient(90deg, transparent, var(--border-color) 15%, var(--border-color) 85%, transparent);
-    background-size: 100% 1px;
-    background-repeat: no-repeat;
-    background-position: center;
-}
-
-/* ----- 50.17 Focus / source / print hard formats ----- */
-#write .md-focus {
-    /* keep outline subtle for nested structures */
-}
-@media print {
-    #write .md-toc::before,
-    #write .footnotes-area::before,
-    #write .footnotes::before,
-    #write .md-fences.md-fences-advanced[lang]::before {
-        display: none !important;
-    }
-    #write .md-alert,
-    #write details,
-    #write .md-math-block,
-    #write .md-table-fig,
-    #write .md-fences.md-fences-advanced {
-        break-inside: avoid;
-        page-break-inside: avoid;
-        box-shadow: none !important;
-    }
-    /* mermaid print: stock */
-}
-
-/* ----- 50.18 Emoji / special unicode in mono contexts ----- */
-#write .md-emoji {
-    font-family: "Segoe UI Emoji", "Segoe UI Symbol", "Apple Color Emoji", sans-serif;
-}
-#write .md-fences .md-emoji { font-family: inherit; }
-
-/* end §50 v12 */
 /* ============================================================
    §60  v17 NESTED ELEGANCE — 全标签 × 深层嵌套统一韵律
    目标：任意组合嵌套仍优雅、可读、可点选，不打架。
