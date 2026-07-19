@@ -7,7 +7,7 @@
 | 作者 | [WJH-makers](https://github.com/WJH-makers) |
 | 适配 | Typora **1.13+**（Mermaid **11.13** 图示实测） |
 | 主题版本 | **base v37** + **user overlay v38** |
-| 皮肤 | Light / Dark / Grey |
+| 皮肤 | Light |
 
 ---
 
@@ -40,8 +40,6 @@ typora-theme-claude-like/
 | 菜单名 | 文件 |
 |--------|------|
 | Claude Like | `claude-like.css` |
-| Claude Like Dark | `claude-like-dark.css` |
-| Claude Like Grey | `claude-like-grey.css` |
 
 Typora 会按皮肤名自动加载同名 `*.user.css`（例如选 Light 时加载 `claude-like.user.css`）。
 
@@ -173,4 +171,5 @@ config:
 - [Typora](https://typora.io/) 主题机制与 Diagram Options  
 - [Mermaid](https://mermaid.js.org/)  
 - Claude / Anthropic 品牌气质参考（非官方主题）
+
 

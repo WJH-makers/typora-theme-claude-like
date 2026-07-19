@@ -15,9 +15,7 @@ if (-not (Test-Path $Target)) {
 
 $files = @(
     "claude-like.css",
-    "claude-like-dark.css",
-    "claude-like-grey.css",
-    "claude-like-base.css",
+            "claude-like-base.css",
     "claude-like.user.css"
 )
 
@@ -46,5 +44,5 @@ Write-Host "  OK  claude_fonts/"
 
 Write-Host ""
 Write-Host "Installed. Fully quit Typora, reopen, then Theme → Claude Like."
-Write-Host "Variants: Claude Like / Claude Like Dark / Claude Like Grey"
+Write-Host "Skin: Claude Like (Light only)`n"
 
