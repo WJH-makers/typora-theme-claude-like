@@ -40,15 +40,11 @@ if (Test-Path $fontDst) {
 Copy-Item $fontSrc $fontDst -Recurse -Force
 Write-Host "  OK  claude_fonts/"
 
-# Optional docs
-foreach ($doc in @("THEME-DEFAULTS.md", "claude-like-README.md")) {
-    $src = Join-Path $RepoRoot $doc
-    if (Test-Path $src) {
-        Copy-Item $src (Join-Path $Target $doc) -Force
-        Write-Host "  OK  $doc"
-    }
+# No optional docs (removed v1.1)
+
 }
 
 Write-Host ""
 Write-Host "Installed. Fully quit Typora, reopen, then Theme → Claude Like."
 Write-Host "Variants: Claude Like / Claude Like Dark / Claude Like Grey"
+
